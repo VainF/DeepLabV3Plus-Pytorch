@@ -2,12 +2,22 @@
 
 Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
 
+## Backend
+:white_check_mark: ResNet50, ResNet101
+:x: Xception (In Progress)
+
 ## Supported Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
 * [Cityscapes](https://www.cityscapes-dataset.com) 
 
 ## Quick Start
 #### 1. Requirements
+* Python 3
+* Pytorch 0.4.0+
+* Torchvision
+* Numpy
+* Pillow
+* tqdm
 
 #### 2. Prepare Datasets
 
@@ -28,13 +38,13 @@ The directory may be like this:
 
 #### 3. run scripts
 ```bash
-python train.py --lr 7e-4 --do_crop --gpu_id 0 --dataset voc
+python train.py --lr 7e-4 --backbone resnet50 --gpu_id 0 --dataset voc --do_crop
 ```
-If you want to use visdom for visualization, try:
+If you want to use visdom for visualization, run the following commands separately:
 ```bash
 visdom -port 13500
 
-python train.py --lr 7e-4 --do_crop  --gpu_id 0 --dataset voc --enable_vis --vis_env main --vis_port 13500 
+python train.py --lr 7e-4  --backbone resnet50 --gpu_id 0  --dataset voc --do_crop --enable_vis --vis_env main --vis_port 13500 
 ```
-visit [visdom github repo](https://github.com/facebookresearch/visdom) for more information.
+visit [visdom (github repo)](https://github.com/facebookresearch/visdom) for more information.
 
