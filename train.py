@@ -83,7 +83,7 @@ def get_argparser():
     parser.add_argument("--backbone", type=str, default='resnet50',
                         choices=['resnet50', 'resnet101', 'resnet'], help='backbone for deeplab' )
     # Visdom options
-    parser.add_argument("--vis", action='store_true', default=False,
+    parser.add_argument("--enable_vis", action='store_true', default=False,
                         help="use visdom for visualization")
     parser.add_argument("--vis_port", type=str, default='13570',
                         help='port for visdom')
@@ -199,7 +199,7 @@ def main():
     random.seed(opts.random_seed)
 
     # Set up visualization
-    if opts.vis==False:
+    if opts.enable_vis==False:
         vis=None
     else:
         vis = Visualizer(port=opts.vis_port, env=opts.vis_env)
@@ -267,7 +267,7 @@ def main():
     #==========   Train Loop   ========#
     #
 
-    vis_sample_id = np.random.randint(0, len(train_loader), 4, np.int32) if opts.vis else None # samples for visualization
+    vis_sample_id = np.random.randint(0, len(train_loader), 4, np.int32) if opts.enable_vis else None # samples for visualization
     label2color = utils.Label2Color(cmap=utils.color_map()) # convert labels to images
     denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406],  
                                std=[0.229, 0.224, 0.225])  # denormalization

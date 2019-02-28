@@ -32,7 +32,9 @@ python train.py --lr 7e-4 --do_crop --gpu_id 0 --dataset voc
 ```
 If you want to use visdom for visualization, try:
 ```bash
-python train.py --lr 7e-4 --do_crop  --gpu_id 0 --dataset voc --vis --vis_env main --vis_port 13500 
+visdom -port 13500
+
+python train.py --lr 7e-4 --do_crop  --gpu_id 0 --dataset voc --enable_vis --vis_env main --vis_port 13500 
 ```
 visit [visdom github repo](https://github.com/facebookresearch/visdom) for more information.
 
