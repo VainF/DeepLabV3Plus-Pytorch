@@ -22,7 +22,7 @@ Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
 
 #### 2. Prepare Datasets
 
-The default dataset path is *./datasets/data*. The scripts will automatically prepare all data. Also You can manually put those donwloaded files (e.g. tar file) under any directory. Just remember to specify your path:
+The default dataset path is *./datasets/data*. The scripts will automatically download and extract all data. Also You can manually put those donwloaded files (e.g. tar file) under any directory. Just remember to specify your path:
 
 ```bash
 python train.py --data_root /path/to/your/datasets
