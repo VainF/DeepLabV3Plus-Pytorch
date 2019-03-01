@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Decoder(nn.Module):
-    def __init__(self, num_classes, low_level_channels=2048):
+    def __init__(self, num_classes, low_level_channels=2048, momentum=0.1):
         super(Decoder, self).__init__()
 
         self.projection_low_level = nn.Sequential( 
@@ -13,10 +13,10 @@ class Decoder(nn.Module):
         )
 
         self.decode_conv = nn.Sequential(nn.Conv2d(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
-                                         nn.BatchNorm2d(256),
+                                         nn.BatchNorm2d(256, momentum=momentum),
                                          nn.ReLU(),
                                          nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
-                                         nn.BatchNorm2d(256),
+                                         nn.BatchNorm2d(256, momentum=momentum),
                                          nn.ReLU(),
                                          nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
         self._init_weight()
@@ -24,7 +24,7 @@ class Decoder(nn.Module):
 
     def forward(self, x, low_level_features):
         low_level_features = self.projection_low_level(low_level_features)
-        x = F.interpolate(x, size=low_level_features.shape[2:], mode='bilinear', align_corners=True)
+        x = F.interpolate(x, size=low_level_features.shape[2:], mode='bilinear', align_corners=False)
         x = torch.cat((x, low_level_features), dim=1)
         
         x = self.decode_conv(x)
@@ -38,5 +38,5 @@ class Decoder(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-def build_decoder(num_classes, low_level_channels):
-    return Decoder(num_classes, low_level_channels)
+def build_decoder(num_classes, low_level_channels, momentum):
+    return Decoder(num_classes, low_level_channels, momentum)

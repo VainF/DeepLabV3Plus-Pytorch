@@ -10,22 +10,22 @@ from .decoder import build_decoder
 class DeepLabv3(nn.Module):
     """DeepLab v3+
     """
-    def __init__(self, num_classes=21, backbone='resnet50', pretrained=True, output_stride=16):
+    def __init__(self, num_classes=21, backbone='resnet50', pretrained=True, output_stride=16, momentum=3e-4):
         super(DeepLabv3, self).__init__()
         if 'resnet' in backbone:
             low_level_channels = 256
             features_channels = 2048
-            self.backbone = build_resnet(backbone, pretrained=pretrained, output_stride=output_stride)
+            self.backbone = build_resnet(backbone, pretrained=pretrained, output_stride=output_stride, momentum=momentum)
 
-        self.aspp = build_aspp(inplanes=features_channels, output_stride=output_stride)
-        self.decoder =  build_decoder(num_classes=num_classes, low_level_channels=low_level_channels)
+        self.aspp = build_aspp(inplanes=features_channels, output_stride=output_stride, momentum=momentum)
+        self.decoder =  build_decoder(num_classes=num_classes, low_level_channels=low_level_channels, momentum=momentum)
 
     def forward(self, x):
         in_size = x.shape[2:]
         x, low_level_features = self.backbone(x)
         x = self.aspp(x)
         x = self.decoder(x, low_level_features)
-        return F.interpolate(x, size=in_size, mode='bilinear', align_corners=True)
+        return F.interpolate(x, size=in_size, mode='bilinear', align_corners=False)
 
     def group_params_1x(self):
         for m in self.backbone.modules():

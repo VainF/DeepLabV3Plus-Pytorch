@@ -25,15 +25,15 @@ def conv3x3(in_planes, out_planes, stride=1, dilation=1):
 class Bottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, dilation=1):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, dilation=1, momentum=0.1):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(planes)
+        self.bn1 = nn.BatchNorm2d(planes, momentum=momentum)
         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
                                padding=dilation, bias=False, dilation=dilation)
-        self.bn2 = nn.BatchNorm2d(planes)
+        self.bn2 = nn.BatchNorm2d(planes, momentum=momentum)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(planes * 4)
+        self.bn3 = nn.BatchNorm2d(planes * 4, momentum=momentum)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -62,7 +62,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=1000, output_stride=16):
+    def __init__(self, block, layers, num_classes=1000, output_stride=16, momentum=0.1):
         self.inplanes = 64
         super(ResNet, self).__init__()
 
@@ -76,14 +76,14 @@ class ResNet(nn.Module):
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
+        self.bn1 = nn.BatchNorm2d(64, momentum=momentum)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer1 = self._make_layer(block, 64,  layers[0], stride=strides[0], dilation=dilations[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=strides[1], dilation=dilations[1])
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=strides[2], dilation=dilations[2])
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=strides[3], dilation=dilations[3])
+        self.layer1 = self._make_layer(block, 64,  layers[0], stride=strides[0], dilation=dilations[0], momentum=momentum)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=strides[1], dilation=dilations[1], momentum=momentum)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=strides[2], dilation=dilations[2], momentum=momentum)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=strides[3], dilation=dilations[3], momentum=momentum)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -94,20 +94,20 @@ class ResNet(nn.Module):
                 m.bias.data.zero_()
 
 
-    def _make_layer(self, block, planes, blocks, stride=1, dilation=1):
+    def _make_layer(self, block, planes, blocks, stride=1, dilation=1, momentum=0.1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
                 nn.Conv2d(self.inplanes, planes * block.expansion,
                           kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(planes * block.expansion),
+                nn.BatchNorm2d(planes * block.expansion, momentum=momentum),
             )
         
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample, dilation=dilation))
+        layers.append(block(self.inplanes, planes, stride, downsample, dilation=dilation,momentum=momentum))
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes, dilation=dilation))
+            layers.append(block(self.inplanes, planes, dilation=dilation,momentum=momentum))
         return nn.Sequential(*layers)
 
     def forward(self, x):
@@ -157,8 +157,8 @@ def resnet101(pretrained=False, **kwargs):
         model.load_state_dict(model_dict)
     return model
 
-def build_resnet(name, pretrained=True, output_stride=16):
+def build_resnet(name, pretrained=True, output_stride=16, momentum=0.1):
     if name=='resnet50' or name=='resnet':
-        return resnet50(pretrained=pretrained, output_stride=output_stride)
+        return resnet50(pretrained=pretrained, output_stride=output_stride, momentum=momentum)
     elif name=='resnet101':
-        return resnet101(pretrained=pretrained, output_stride=output_stride)
+        return resnet101(pretrained=pretrained, output_stride=output_stride, momentum=momentum)
