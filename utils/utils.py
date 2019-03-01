@@ -1,6 +1,7 @@
 from torchvision.transforms.functional import normalize
 import torch.nn as nn
 import numpy as np
+import os 
 
 def denormalize(tensor, mean, std):
     mean = np.array(mean)
@@ -67,4 +68,8 @@ class Label2Color(object):
 
     def __call__(self, lbls):
         return self.cmap[lbls]
+
+def mkdir(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
 

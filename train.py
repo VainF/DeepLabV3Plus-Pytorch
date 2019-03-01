@@ -14,6 +14,7 @@ from metrics import StreamSegMetrics
 
 import torch
 import torch.nn.functional as F
+import torch.nn as nn
 from utils.visualizer import Visualizer
 
 
@@ -36,14 +37,16 @@ def get_argparser():
                         help="num classes (default: 21)")
     
     # Model Options
-    parser.add_argument("--bn_mom", type=float, default=3e-4,
-                        help='momentum for batchnorm (default: 3e-4)')
+    parser.add_argument("--bn_mom", type=float, default=0.01,
+                        help='momentum for batchnorm of backbone  (default: 0.01)')
     parser.add_argument("--output_stride", type=int, default=16,
                         help="output stride for deeplabv3+ ")
 
     # Train Options
     parser.add_argument("--ckpt", default=None, type=str,
                         help="path to trained model. Leave it None if you want to retrain your model")
+    parser.add_argument("--loss_type", type=str, default='cross_entropy',
+                        choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
     parser.add_argument("--epochs", type=int, default=200,
                         help="epoch number (default: 200)")
     parser.add_argument("--gpu_id", type=str, default='0', 
@@ -94,7 +97,8 @@ def get_argparser():
 
 
 
-def train( cur_epoch, model, optim, train_loader, device, scheduler=None, print_interval=10, vis=None):
+def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=None, print_interval=10, vis=None):
+    """Train and return epoch loss"""
     print("Epoch %d, lr = %f"%(cur_epoch, optim.param_groups[0]['lr']))
     
     model.train()
@@ -107,7 +111,7 @@ def train( cur_epoch, model, optim, train_loader, device, scheduler=None, print_
 
         # N, C, H, W
         outputs = model(images)
-        loss = F.cross_entropy(outputs, labels, reduction='mean', ignore_index=255)
+        loss = criterion(outputs, labels)
 
         optim.zero_grad()
         loss.backward()
@@ -129,6 +133,7 @@ def train( cur_epoch, model, optim, train_loader, device, scheduler=None, print_
 
 
 def validate( model, loader, device, metrics, ret_samples_ids=None):
+    """Do validation and return specified samples"""
     model.eval()
     metrics.reset()
     ret_samples = []
@@ -202,6 +207,9 @@ def main():
     device = torch.device( 'cuda' if torch.cuda.is_available() else 'cpu' )
     print("Device: %s"%device)
 
+
+    utils.mkdir('checkpoints')
+
     # Set up random seed
     torch.manual_seed(opts.random_seed)
     torch.cuda.manual_seed(opts.random_seed)
@@ -221,6 +229,7 @@ def main():
     print("Dataset: %s, Train set: %d, Val set: %d"%(opts.dataset, len(train_dst), len(val_dst)))
     
     # Set up model
+    print("Backbone: %s"%opts.backbone)
     model = DeepLabv3(num_classes=opts.num_classes, backbone=opts.backbone, pretrained=True, momentum=opts.bn_mom, output_stride=opts.output_stride)
     if torch.cuda.device_count()>1: # Parallel
         print("%d GPU parallel"%(torch.cuda.device_count()))
@@ -238,6 +247,7 @@ def main():
         {"params": model_ref.group_params_1x(),  'lr': opts.lr },
         {"params": model_ref.group_params_10x(),  'lr': opts.lr*10 }
     ], lr=opts.lr, momentum=opts.momentum, weight_decay=opts.weight_decay, nesterov=False if opts.no_nesterov else True)
+
     #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
     scheduler = utils.PolyLR(optimizer, max_iters=20000, power=0.9)
     print("Optimizer:\n%s"%(optimizer))
@@ -246,11 +256,11 @@ def main():
     best_score = 0.0
     cur_epoch = 0
     if opts.ckpt is not None and os.path.isfile(opts.ckpt):
-        checkpoint = torch.load(args.ckpt)
+        checkpoint = torch.load(opts.ckpt)
         model_ref.load_state_dict(checkpoint["model_state"])
         optimizer.load_state_dict(checkpoint["optimizer_state"])
         scheduler.load_state_dict(checkpoint["scheduler_state"])
-        cur_epoch = checkpoint["epoch"]
+        cur_epoch = checkpoint["epoch"]+1
         best_score = checkpoint['best_score']
         print("Model restored from %s"%opts.ckpt)
     else:
@@ -270,6 +280,10 @@ def main():
         torch.save(state, path)
         print( "Model saved as %s"%path )
 
+
+    # Set up criterion
+    criterion = utils.get_loss(opts.loss_type)
+
     #
     #==========   Train Loop   ========#
     #
@@ -280,12 +294,12 @@ def main():
 
     while cur_epoch < opts.epochs:
         # =====  Train  =====
-        epoch_loss = train(cur_epoch=cur_epoch, model=model, optim=optimizer, train_loader=train_loader, device=device, scheduler=scheduler, vis=vis)
-        print("End of Epoch %d, Average Loss=%f"%(cur_epoch, epoch_loss))
+        epoch_loss = train(cur_epoch=cur_epoch, criterion=criterion, model=model, optim=optimizer, train_loader=train_loader, device=device, scheduler=scheduler, vis=vis)
+        print("End of Epoch %d/%d, Average Loss=%f"%(cur_epoch, opts.epochs, epoch_loss))
 
         # =====  Save Latest Model  =====
         if (cur_epoch+1)%opts.ckpt_interval==0:
-            save_ckpt( 'latest_%s_%s.pkl'%(opts.backbone, opts.dataset) )
+            save_ckpt( 'checkpoints/latest_%s_%s.pkl'%(opts.backbone, opts.dataset) )
 
         # =====  Validation  =====
         if (cur_epoch+1)%opts.val_interval==0:
@@ -296,7 +310,7 @@ def main():
             # =====  Save Best Model  =====
             if val_score['Mean IoU']>best_score: # save best model
                 best_score = val_score['Mean IoU']
-                save_ckpt( 'best_%s_%s.pkl'%(opts.backbone, opts.dataset) )
+                save_ckpt( 'checkpoints/best_%s_%s.pkl'%(opts.backbone, opts.dataset) )
             
             if vis is not None: # visualize score and samples
                 vis.vis_scalar("[Val] Overall Acc", cur_epoch, val_score['Overall Acc'] )

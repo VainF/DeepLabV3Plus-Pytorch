@@ -1,10 +1,9 @@
 # DeepLabv3-plus.pytorch
 
-Unofficial Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
+Simplified Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
 
 ## Backend
 * ResNet50, ResNet101  
-
 
 ## Supported Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
@@ -38,7 +37,7 @@ After extraction, The directory may be like this:
 #### 3. Train
 ##### Train without visualization
 ```bash
-python train.py --gpu_id 0 --lr 5e-4 --batch_size 6 
+python train.py --gpu_id 0 --backbone resnet50 --lr 5e-4 --batch_size 4
 ```
 
 ##### Train with visualization
@@ -48,7 +47,30 @@ To enable [visdom]((https://github.com/facebookresearch/visdom)) for visualizati
 visdom -port 13500
 
 # Train
-python train.py --gpu_id 0  --lr 5e-4 --batch_size 6 --enable_vis --vis_env deeplab --vis_port 13500
+python train.py --gpu_id 0 --backbone resnet50  --lr 5e-4 --batch_size 4 --enable_vis --vis_env deeplab --vis_port 13500
 ```
 Please see train.py for more options.
 
+
+## Some Details
+
+* The init learning rate is different from original paper. I use 5e-4 for voc when the author uses 7e-3.
+  
+* **4G GPU RAM** is required for batch size of 4. Try to reduce batch size or change crop size if GPU memory is limited.
+
+* Multi-Grid are not introduced in this repo according to the paper. see 4.3 of [2].
+
+        Note that we do not employ the multi-grid method [77,78,23], which we found does not improve the performance.
+
+* Use small momentum for batchnorm of backbone. see part 4 of [1].
+  
+        In short, we employ the same learning rate schedule (i.e., “poly” policy [52] and same initial learning rate 0.007), crop size 513 × 513, fine-tuning batch normalization parameters [75] when output stride = 16, and random scale data augmentation during training. Note that we also include batch normalization parameters in the proposed decoder module.
+
+* About Data augmentation. see 4.1 of [1]
+  
+        Data augmentation: We apply data augmentation by randomly scaling the input images (from 0.5 to 2.0) and randomly left-right flipping during training.
+## Reference
+
+[1] [Rethinking Atrous Convolution for Semantic Image Segmentation](https://arxiv.org/pdf/1706.05587.pdf)
+
+[2] [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611)

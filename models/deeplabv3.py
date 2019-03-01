@@ -17,8 +17,8 @@ class DeepLabv3(nn.Module):
             features_channels = 2048
             self.backbone = build_resnet(backbone, pretrained=pretrained, output_stride=output_stride, momentum=momentum)
 
-        self.aspp = build_aspp(inplanes=features_channels, output_stride=output_stride, momentum=momentum)
-        self.decoder =  build_decoder(num_classes=num_classes, low_level_channels=low_level_channels, momentum=momentum)
+        self.aspp = build_aspp(inplanes=features_channels, output_stride=output_stride, momentum=0.1)
+        self.decoder =  build_decoder(num_classes=num_classes, low_level_channels=low_level_channels, momentum=0.1)
 
     def forward(self, x):
         in_size = x.shape[2:]
