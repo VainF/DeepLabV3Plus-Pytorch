@@ -48,10 +48,37 @@ class Visualizer(object):
             self.vis.image( img=img, win=win, opts=opts, env=env )
         else:
             self.cur_win[name] = self.vis.image( img=img, opts=default_opts, env=env )
+    
+    def vis_table(self, name, tbl, opts=None):
+        win = self.cur_win.get(name, None)
+
+        tbl_str = "<table width=\"100%\"> "
+        tbl_str+="<tr> \
+                 <th>Term</th> \
+                 <th>Value</th> \
+                 </tr>"
+        for k, v in tbl.items():
+            tbl_str+=  "<tr> \
+                       <td>%s</td> \
+                       <td>%s</td> \
+                       </tr>"%(k, v)
+
+        tbl_str+="</table>"
+
+        default_opts = { 'title': name }
+        if opts is not None:
+                default_opts.update(opts)
+        if win is not None:
+            self.vis.text(tbl_str, win=win, opts=default_opts)
+        else:
+            self.cur_win[name] = self.vis.text(tbl_str, opts=default_opts)
+
 
 if __name__=='__main__':
     import numpy as np
-    vis = Visualizer()
-    vis.vis_scalar('test', [6], [7])
-    vis.vis_image('test_image', np.zeros( (3,500,500) , dtype=np.float32) )
+    vis = Visualizer(port=13500, env='main')
+    tbl = {"lr": 214, "momentum": 0.9}
+    vis.vis_table("test_table", tbl)
+    tbl = {"lr": 244444, "momentum": 0.9, "haha": "hoho"}
+    vis.vis_table("test_table", tbl)
     

@@ -105,7 +105,8 @@ class ResNet(nn.Module):
         layers = []
         layers.append(block(self.inplanes, planes, stride, downsample, dilation=dilation,momentum=momentum))
         self.inplanes = planes * block.expansion
-        for i in range(1, blocks):
+
+        for i in range(1, blocks): 
             layers.append(block(self.inplanes, planes, dilation=dilation,momentum=momentum))
         return nn.Sequential(*layers)
 

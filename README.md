@@ -1,6 +1,6 @@
 # DeepLabv3-plus.pytorch
 
-Simplified Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
+Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
 
 ## Backend
 * ResNet50, ResNet101  
@@ -12,7 +12,7 @@ Simplified Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.026
 ## Quick Start
 #### 1. Requirements
 * Python 3
-* Pytorch 0.4.0+
+* Pytorch 1.0.0+
 * Torchvision
 * Numpy
 * Pillow
@@ -54,9 +54,13 @@ Please see train.py for more options.
 
 ## Some Details
 
-* The init learning rate is different from original paper. I use 5e-4 for voc when the author uses 7e-3.
-  
-* **4G GPU RAM** is required for batch size of 4. Try to reduce batch size or change crop size if GPU memory is limited.
+* In this repo, images are used for validation without any cropping, which is different from 4.1 of [1].
+
+        We thus employ crop size to be 513 during both training and test on PASCAL VOC 2012 dataset.
+
+* The init learning rate is different from original paper. I use 3e-4 for voc when the author uses 7e-3.
+
+* **4G GPU RAM** is required for batch size of 4. If GPU memory is limited, try to reduce batch size or change crop size. Note that batchnorm usually needs large bacth size. As an alternative, you can use [group normalization (GN)](https://arxiv.org/abs/1803.08494).
 
 * Multi-Grid are not introduced in this repo according to the paper. see 4.3 of [2].
 
@@ -71,6 +75,6 @@ Please see train.py for more options.
         Data augmentation: We apply data augmentation by randomly scaling the input images (from 0.5 to 2.0) and randomly left-right flipping during training.
 ## Reference
 
-[1] [Rethinking Atrous Convolution for Semantic Image Segmentation](https://arxiv.org/pdf/1706.05587.pdf)
+[1] [Rethinking Atrous Convolution for Semantic Image Segmentation]([https://arxiv.org/pdf/1706.05587.pdf](https://arxiv.org/abs/1706.05587))
 
 [2] [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611)

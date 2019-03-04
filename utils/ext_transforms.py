@@ -40,19 +40,37 @@ class ExtCompose(object):
         format_string += '\n)'
         return format_string
 
-class ExtRandomScale(object):
-    """Resize the input PIL Image to the given size.
+
+class ExtCenterCrop(object):
+    """Crops the given PIL Image at the center.
 
     Args:
-        size (sequence or int): Desired output size. If size is a sequence like
-            (h, w), output size will be matched to this. If size is an int,
-            smaller edge of the image will be matched to this number.
-            i.e, if height > width, then image will be rescaled to
-            (size * height / width, size)
-        interpolation (int, optional): Desired interpolation. Default is
-            ``PIL.Image.BILINEAR``
+        size (sequence or int): Desired output size of the crop. If size is an
+            int instead of sequence like (h, w), a square crop (size, size) is
+            made.
     """
 
+    def __init__(self, size):
+        if isinstance(size, numbers.Number):
+            self.size = (int(size), int(size))
+        else:
+            self.size = size
+
+    def __call__(self, img, lbl):
+        """
+        Args:
+            img (PIL Image): Image to be cropped.
+
+        Returns:
+            PIL Image: Cropped image.
+        """
+        return F.center_crop(img, self.size), F.center_crop(lbl, self.size)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(size={0})'.format(self.size)
+
+
+class ExtRandomScale(object):
     def __init__(self, scale_range, interpolation=Image.BILINEAR):
         self.scale_range = scale_range
         self.interpolation = interpolation
@@ -69,14 +87,14 @@ class ExtRandomScale(object):
         assert img.size == lbl.size
         scale = random.uniform(self.scale_range[0], self.scale_range[1])
         target_size = ( int(img.size[0]*scale), int(img.size[1]*scale) )
-        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, self.interpolation)
+        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, Image.NEAREST)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
         return self.__class__.__name__ + '(size={0}, interpolation={1})'.format(self.size, interpolate_str)
 
 class ExtScale(object):
-    """Resize the input PIL Image to the given size.
+    """Resize the input PIL Image to the given scale.
 
     Args:
         size (sequence or int): Desired output size. If size is a sequence like
@@ -103,7 +121,7 @@ class ExtScale(object):
         """
         assert img.size == lbl.size
         target_size = ( int(img.size[0]*self.scale), int(img.size[1]*self.scale) )
-        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, self.interpolation)
+        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, Image.NEAREST)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
@@ -400,7 +418,7 @@ class ExtResize(object):
         Returns:
             PIL Image: Rescaled image.
         """
-        return F.resize(img, self.size, self.interpolation), F.resize(lbl, self.size, self.interpolation)
+        return F.resize(img, self.size, self.interpolation), F.resize(lbl, self.size, Image.NEAREST)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]

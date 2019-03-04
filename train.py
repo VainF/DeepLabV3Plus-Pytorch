@@ -37,38 +37,50 @@ def get_argparser():
                         help="num classes (default: 21)")
     
     # Model Options
-    parser.add_argument("--bn_mom", type=float, default=0.01,
-                        help='momentum for batchnorm of backbone  (default: 0.01)')
+    parser.add_argument("--bn_mom", type=float, default=3e-4,
+                        help='momentum for batchnorm of backbone  (default: 3e-4)')
     parser.add_argument("--output_stride", type=int, default=16,
                         help="output stride for deeplabv3+ ")
+    parser.add_argument("--use_separable_conv", action='store_true', default=False,
+                        help="Use separable conv in ASPP and Decoder")
 
     # Train Options
+    parser.add_argument("--lr", type=float, default=3e-4,
+                        help="learning rate (default: 3e-4)")
+    parser.add_argument("--crop_val", action='store_true', default=False,
+                        help='do crop for validation (default: False)')
+    parser.add_argument("--batch_size", type=int, default=8,
+                        help='batch Size (default: 8)')
+    parser.add_argument("--lr_policy", type=str, default='poly',
+                        choices=['poly', 'step'], help="lr schedule policy (default: poly)")
+    parser.add_argument("--lr_decay_step", type=int, default=2000,
+                        help="decay step for stepLR (default: 2000)")
+    parser.add_argument("--lr_decay_factor", type=float, default=0.1,
+                        help="decay factor for stepLR (default: 0.1)")
+    parser.add_argument("--lr_power", type=float, default=0.9,
+                        help="power for polyLR (default: 0.9)")
     parser.add_argument("--ckpt", default=None, type=str,
                         help="path to trained model. Leave it None if you want to retrain your model")
     parser.add_argument("--loss_type", type=str, default='cross_entropy',
                         choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
-    parser.add_argument("--epochs", type=int, default=200,
-                        help="epoch number (default: 200)")
+    parser.add_argument("--epochs", type=int, default=120,
+                        help="epoch number (default: 120)")
     parser.add_argument("--gpu_id", type=str, default='0', 
                         help="GPU ID")
-    parser.add_argument("--lr", type=float, default=5e-4,
-                        help="learning rate (default: 5e-4)")
-    parser.add_argument("--batch_size", type=int, default=4,
-                        help='batch Size (default: 4)')
     parser.add_argument("--no_nesterov", action='store_true', default=False,
                         help="Disable nesterov (default: False)")
     parser.add_argument("--momentum", type=float, default=0.9,
                         help='momentum for SGD (default: 0.9)')
-    parser.add_argument("--weight_decay", type=float, default=5e-4,
-                        help='weight decay (default: 5e-4)')
+    parser.add_argument("--weight_decay", type=float, default=1e-4,
+                        help='weight decay (default: 1e-4)')
     parser.add_argument("--crop_size", type=int, default=513,
                         help="crop size (default: 513)")
     parser.add_argument("--num_workers", type=int, default=4,
                         help='number of workers (default: 4)')
     parser.add_argument("--val_on_trainset", action='store_true', default=False ,
                         help="enable validation on train set (default: False)")
-    parser.add_argument("--random_seed", type=int, default=23333,
-                        help="random seed (default: 23333)")
+    parser.add_argument("--random_seed", type=int, default=219,
+                        help="random seed (default: 219)")
     parser.add_argument("--print_interval", type=int, default=10,
                         help="print interval of loss (default: 10)")
     parser.add_argument("--val_interval", type=int, default=1,
@@ -91,10 +103,65 @@ def get_argparser():
                         help='port for visdom')
     parser.add_argument("--vis_env", type=str, default='main',
                         help='env for visdom')
-    parser.add_argument("--vis_sample_num", type=int, default=4,
-                        help='number of samples for visualization')
+    parser.add_argument("--vis_sample_num", type=int, default=8,
+                        help='number of samples for visualization (default: 6)')
     return parser
 
+
+
+def get_dataset(opts):
+    """ Dataset And Augmentation
+    """
+    if opts.dataset=='voc':
+        train_transform = ExtCompose( [ 
+            ExtRandomScale((0.5, 2.0)),
+            ExtRandomCrop(size=(opts.crop_size, opts.crop_size), pad_if_needed=True),
+            ExtRandomHorizontalFlip(),
+            ExtToTensor(),
+            ExtNormalize( mean=[0.485, 0.456, 0.406],
+                          std=[0.229, 0.224, 0.225] ),
+        ])
+
+        if opts.crop_val:
+            # crop in validation
+            val_transform = ExtCompose([
+                ExtResize(size=opts.crop_size),
+                ExtCenterCrop(size=opts.crop_size),
+                ExtToTensor(),
+                ExtNormalize( mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225] ),
+            ])
+        else:
+            # no crop, batch size = 1
+            val_transform = ExtCompose([
+                ExtToTensor(),
+                ExtNormalize( mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225] ),
+            ])
+    
+        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=True, transform=train_transform)
+        val_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='val', download=False, transform=val_transform)
+        
+    if opts.dataset=='cityscapes':
+        train_transform = ExtCompose( [ 
+            ExtScale(0.5),
+            ExtRandomCrop(size=(opts.crop_size, opts.crop_size)),
+            ExtRandomHorizontalFlip(),
+            ExtToTensor(),
+            ExtNormalize( mean=[0.485, 0.456, 0.406],
+                          std=[0.229, 0.224, 0.225] ),
+        ] )
+
+        val_transform = ExtCompose( [
+            ExtScale(0.5),
+            ExtToTensor(),
+            ExtNormalize( mean=[0.485, 0.456, 0.406],
+                          std=[0.229, 0.224, 0.225] ),
+        ] )
+
+        train_dst = Cityscapes(root=opts.data_root, split='train', download=True, transform=train_transform)
+        val_dst = Cityscapes(root=opts.data_root, split='val', download=False, transform=val_transform)
+    return train_dst, val_dst
 
 
 def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=None, print_interval=10, vis=None):
@@ -154,61 +221,19 @@ def validate( model, loader, device, metrics, ret_samples_ids=None):
     return score, ret_samples
 
 
-
-def get_dataset(opts):
-    if opts.dataset=='voc':
-        train_transform = ExtCompose( [ 
-            ExtRandomScale((0.5, 2.0)),
-            ExtRandomCrop(size=(opts.crop_size, opts.crop_size), pad_if_needed=True),
-            ExtRandomHorizontalFlip(),
-            ExtToTensor(),
-            ExtNormalize( mean=[0.485, 0.456, 0.406],
-                          std=[0.229, 0.224, 0.225] ),
-        ])
-
-        # batch size 1
-        val_transform = ExtCompose([
-            ExtToTensor(),
-            ExtNormalize( mean=[0.485, 0.456, 0.406],
-                          std=[0.229, 0.224, 0.225] ),
-        ])
-    
-        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=True, transform=train_transform)
-        val_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='val', download=False, transform=val_transform)
-        
-    if opts.dataset=='cityscapes':
-        train_transform = ExtCompose( [ 
-            ExtScale(0.5),
-            ExtRandomCrop(size=(opts.crop_size, opts.crop_size)),
-            ExtRandomHorizontalFlip(),
-            ExtToTensor(),
-            ExtNormalize( mean=[0.485, 0.456, 0.406],
-                          std=[0.229, 0.224, 0.225] ),
-        ] )
-
-        # batch size 1
-        val_transform = ExtCompose( [
-            ExtToTensor(),
-            ExtNormalize( mean=[0.485, 0.456, 0.406],
-                          std=[0.229, 0.224, 0.225] ),
-        ] )
-
-        train_dst = Cityscapes(root=opts.data_root, split='train', download=True, transform=train_transform)
-        val_dst = VOCSegmentation(root=opts.data_root, split='val', download=False, transform=val_transform)
-    return train_dst, val_dst
-
-
-
 def main():
     opts = get_argparser().parse_args()
     opts = modify_command_options(opts)
 
+    # Set up visualization
+    vis = Visualizer(port=opts.vis_port, env=opts.vis_env) if opts.enable_vis else None
+
+    if vis is not None: # display options
+        vis.vis_table( "Options", vars(opts) )
+
     os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
     device = torch.device( 'cuda' if torch.cuda.is_available() else 'cpu' )
     print("Device: %s"%device)
-
-
-    utils.mkdir('checkpoints')
 
     # Set up random seed
     torch.manual_seed(opts.random_seed)
@@ -216,21 +241,15 @@ def main():
     np.random.seed(opts.random_seed)
     random.seed(opts.random_seed)
 
-    # Set up visualization
-    if opts.enable_vis==False:
-        vis=None
-    else:
-        vis = Visualizer(port=opts.vis_port, env=opts.vis_env)
-
     # Set up dataloader
     train_dst, val_dst = get_dataset(opts)
     train_loader = data.DataLoader(train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=opts.num_workers)
-    val_loader = data.DataLoader(val_dst, batch_size=1 if opts.dataset=='voc' else opts.batch_size, shuffle=False, num_workers=opts.num_workers)
+    val_loader = data.DataLoader(val_dst, batch_size=opts.batch_size if opts.crop_val else 1 , shuffle=False, num_workers=opts.num_workers)
     print("Dataset: %s, Train set: %d, Val set: %d"%(opts.dataset, len(train_dst), len(val_dst)))
     
     # Set up model
     print("Backbone: %s"%opts.backbone)
-    model = DeepLabv3(num_classes=opts.num_classes, backbone=opts.backbone, pretrained=True, momentum=opts.bn_mom, output_stride=opts.output_stride)
+    model = DeepLabv3(num_classes=opts.num_classes, backbone=opts.backbone, pretrained=True, momentum=opts.bn_mom, output_stride=opts.output_stride, use_separable_conv=opts.use_separable_conv)
     if torch.cuda.device_count()>1: # Parallel
         print("%d GPU parallel"%(torch.cuda.device_count()))
         model = torch.nn.DataParallel(model)
@@ -247,11 +266,14 @@ def main():
         {"params": model_ref.group_params_1x(),  'lr': opts.lr },
         {"params": model_ref.group_params_10x(),  'lr': opts.lr*10 }
     ], lr=opts.lr, momentum=opts.momentum, weight_decay=opts.weight_decay, nesterov=False if opts.no_nesterov else True)
-
-    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
-    scheduler = utils.PolyLR(optimizer, max_iters=20000, power=0.9)
+    if opts.lr_policy=='poly':
+        scheduler = utils.PolyLR(optimizer, max_iters=opts.epochs*len(train_loader), power=opts.lr_power)
+    elif opts.lr_policy=='step':
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.lr_decay_step, gamma=opts.lr_decay_factor)
+    
     print("Optimizer:\n%s"%(optimizer))
     
+    utils.mkdir('checkpoints')
     # Restore
     best_score = 0.0
     cur_epoch = 0
@@ -280,22 +302,22 @@ def main():
         torch.save(state, path)
         print( "Model saved as %s"%path )
 
-
     # Set up criterion
     criterion = utils.get_loss(opts.loss_type)
 
-    #
-    #==========   Train Loop   ========#
-    #
+    
+    #==========   Train Loop   ==========#
+    
     vis_sample_id = np.random.randint(0, len(train_loader), opts.vis_sample_num, np.int32) if opts.enable_vis else None # sample idxs for visualization
     label2color = utils.Label2Color(cmap=utils.color_map(opts.dataset)) # convert labels to images
     denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406],  
-                               std=[0.229, 0.224, 0.225])  # denormalization
-
+                               std=[0.229, 0.224, 0.225])  # denormalization for ori images
     while cur_epoch < opts.epochs:
         # =====  Train  =====
         epoch_loss = train(cur_epoch=cur_epoch, criterion=criterion, model=model, optim=optimizer, train_loader=train_loader, device=device, scheduler=scheduler, vis=vis)
         print("End of Epoch %d/%d, Average Loss=%f"%(cur_epoch, opts.epochs, epoch_loss))
+        if opts.enable_vis:
+            vis.vis_scalar("Epoch Loss", cur_epoch, epoch_loss )
 
         # =====  Save Latest Model  =====
         if (cur_epoch+1)%opts.ckpt_interval==0:
@@ -312,9 +334,11 @@ def main():
                 best_score = val_score['Mean IoU']
                 save_ckpt( 'checkpoints/best_%s_%s.pkl'%(opts.backbone, opts.dataset) )
             
-            if vis is not None: # visualize score and samples
+            if vis is not None: # visualize validation score and samples
                 vis.vis_scalar("[Val] Overall Acc", cur_epoch, val_score['Overall Acc'] )
                 vis.vis_scalar("[Val] Mean IoU", cur_epoch, val_score['Mean IoU'] )
+                vis.vis_table("[Val] Class IoU", val_score['Class IoU'] )
+
                 for k, (img, target, lbl) in enumerate( ret_samples ):
                     img = (denorm(img) * 255).astype(np.uint8)
                     target = label2color(target).transpose(2,0,1).astype(np.uint8)
@@ -322,14 +346,15 @@ def main():
 
                     concat_img = np.concatenate( (img, target, lbl), axis=2 ) # concat along width
                     vis.vis_image('Sample %d'%k, concat_img)
-            
-            if opts.val_on_trainset==True: # do validation on train set
+
+            if opts.val_on_trainset==True: # validate on train set
                 print("validate on train set...")
                 train_score, _ = validate(model=model, loader=train_loader, device=device, metrics=metrics)
                 print(metrics.to_str(train_score))
                 if vis is not None:
                     vis.vis_scalar("[Train] Overall Acc", cur_epoch, train_score['Overall Acc'] )
                     vis.vis_scalar("[Train] Mean IoU", cur_epoch, train_score['Mean IoU'] )
+                    
         cur_epoch+=1
 
 if __name__=='__main__':
