@@ -66,7 +66,6 @@ class VOCSegmentation(data.Dataset):
                  year='2012',
                  image_set='train',
                  download=False,
-                 train_aug_path=None,
                  transform=None):
 
         is_aug=False
@@ -94,7 +93,7 @@ class VOCSegmentation(data.Dataset):
                                ' You can use download=True to download it')
         
         if is_aug and image_set=='train':
-            mask_dir = train_aug_path
+            mask_dir = os.path.join(voc_root, 'SegmentationClassAug')
             assert os.path.exists(mask_dir), "SegmentationClassAug not found, please refer to README.md and prepare it manually"
             split_f = './datasets/data/train_aug.txt'
         else:

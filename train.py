@@ -91,8 +91,6 @@ def get_argparser():
     # PASCAL VOC Options
     parser.add_argument("--year", type=str, default='2012',
                         choices=['2012_aug', '2012', '2011', '2009', '2008', '2007'], help='year of VOC' )
-    parser.add_argument("--train_aug_path", type=str, default='./datasets/data/VOCdevkit/VOC2012/SegmentationClassAug',
-                        help="Path to train_aug labels")
     
     # Deeplab Options
     parser.add_argument("--backbone", type=str, default='resnet50',
@@ -139,7 +137,7 @@ def get_dataset(opts):
                             std=[0.229, 0.224, 0.225] ),
             ])
     
-        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=True, transform=train_transform, train_aug_path=opts.train_aug_path)
+        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=True, transform=train_transform)
         val_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='val', download=False, transform=val_transform)
         
     if opts.dataset=='cityscapes':

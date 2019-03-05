@@ -30,29 +30,22 @@ Data will be automatically downloaded and extracted. The default path is ./datas
 The data dir may be like this:  
 ```
 /DATA_DIR
-    /VOCdevkit  
-        /SegmentationClass
-        /JPEGImages
-        ...
+    /VOCdevkit 
+        /VOC2012 
+            /SegmentationClass
+            /JPEGImages
+            ...
     /VOCtrainval_11-May-2012.tar
     ...
 ```
 
-#### Use VOC2012 trainaug (Optional, Recommended)
-
-See 4 of [2]
-
-         The original dataset contains 1, 464 (train), 1, 449 (val), and 1, 456 (test) pixel-level annotated images. We augment the dataset by the extra annotations provided by [76], resulting in 10, 582 (trainaug) training images. The performance is measured in terms of pixel intersection-over-union averaged across the 21 classes (mIOU).
-
-*./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to **download extra annatations** from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). **Please extract the SegmentationClassAug files and run scripts with --train_aug_path PATH/TO/SegmentationClassAug**
-
-See [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet) for more information about SegmentationClassAug.
-
 ### 3. Train
+
 #### Train on Standard PASCAL VOC2012
+You can run the scripts directly without any preparing. training will start after downloading and extraction.
 
 ```bash
-python train.py --backbone resnet50 --dataset voc --data_root ./datasets/data --lr 3e-4 --epochs 60 --batch_size 10 
+python train.py --backbone resnet50 --dataset voc --year 2012 --data_root ./datasets/data --lr 3e-4 --epochs 60 --batch_size 10 
 ```
 
 ##### Enable Visdom
@@ -62,7 +55,35 @@ To enable [visdom]((https://github.com/facebookresearch/visdom)) for visualizati
 visdom -port 13500
 
 # Train
-python train.py --backbone resnet50 --dataset voc --data_root ./datasets/data --lr 3e-4 --epochs 60  --batch_size 10 --enable_vis --vis_env deeplab --vis_port 13500
+python train.py --backbone resnet50 --dataset voc --year 2012 --data_root ./datasets/data --lr 3e-4 --epochs 60  --batch_size 10 --enable_vis --vis_env deeplab --vis_port 13500
+```
+
+
+
+#### Train on PASCAL VOC2012 Aug (Recommended)
+
+See chapter 4 of [2]
+
+         The original dataset contains 1464 (train), 1449 (val), and 1456 (test) pixel-level annotated images. We augment the dataset by the extra annotations provided by [76], resulting in 10582 (trainaug) training images. The performance is measured in terms of pixel intersection-over-union averaged across the 21 classes (mIOU).
+
+*./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to **download extra annatations** from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). Those annotations come from [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet).
+
+**Please extract the SegmentationClassAug files to directory of VOC2012**
+
+```
+/DATA_DIR
+    /VOCdevkit  
+        /VOC2012
+            /SegmentationClass
+            /SegmentationClassAug
+            /JPEGImages
+        ...
+    /VOCtrainval_11-May-2012.tar
+    ...
+```
+
+```bash
+python train.py --backbone resnet50 --dataset voc --year 2012_aug --data_root ./datasets/data  --lr 3e-4 --epochs 20  --batch_size 10 --enable_vis --vis_env deeplab --vis_port 13500
 ```
 
 
