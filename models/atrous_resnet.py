@@ -72,7 +72,6 @@ class ResNet(nn.Module):
             strides=[1, 2, 1, 1]
             dilations=[1, 1, 2, 4] # 23+3 blocks (78 layers)
         
-
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64, momentum=momentum)
@@ -107,7 +106,7 @@ class ResNet(nn.Module):
         self.inplanes = planes * block.expansion
 
         for i in range(1, blocks): 
-            layers.append(block(self.inplanes, planes, dilation=dilation,momentum=momentum))
+            layers.append(block(self.inplanes, planes, dilation=dilation, momentum=momentum))
         return nn.Sequential(*layers)
 
     def forward(self, x):

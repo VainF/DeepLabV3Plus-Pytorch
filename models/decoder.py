@@ -21,7 +21,7 @@ class Decoder(nn.Module):
                                          nn.ReLU(),
                                          nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
         self._init_weight()
-
+    
 
     def forward(self, x, low_level_features):
         low_level_features = self.reduce_low_level(low_level_features)
@@ -33,7 +33,7 @@ class Decoder(nn.Module):
     def _init_weight(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight)
+                torch.nn.init.xavier_normal_(m.weight)
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()

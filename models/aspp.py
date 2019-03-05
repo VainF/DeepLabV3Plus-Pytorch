@@ -24,7 +24,7 @@ class _ASPP(nn.Module):
     def _init_weight(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight)
+                torch.nn.init.xavier_normal_(m.weight)
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -49,7 +49,7 @@ class ASPP(nn.Module):
         self.reduce = nn.Sequential(
             nn.Conv2d(1280, 256, 1, bias=False),
             nn.BatchNorm2d(256, momentum=momentum),
-            nn.ReLU(),
+            nn.ReLU()
         )
         self._init_weight()
 
@@ -62,7 +62,6 @@ class ASPP(nn.Module):
         x5 = F.interpolate(x5, size=x4.size()[2:], mode='bilinear', align_corners=False)
         x = torch.cat((x1, x2, x3, x4, x5), dim=1)
         x = self.reduce(x)
-
         return x
 
     def _init_weight(self):

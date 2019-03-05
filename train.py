@@ -33,24 +33,26 @@ def get_argparser():
                         help="path to Dataset")
     parser.add_argument("--dataset", type=str, default='voc',
                         choices=['voc', 'cityscapes'], help='Name of dataset' )
-    parser.add_argument("--num_classes", type=int, default=21, 
-                        help="num classes (default: 21)")
+    parser.add_argument("--num_classes", type=int, default=None, 
+                        help="num classes (default: None)")
     
     # Model Options
-    parser.add_argument("--bn_mom", type=float, default=3e-4,
-                        help='momentum for batchnorm of backbone  (default: 3e-4)')
+    parser.add_argument("--bn_mom", type=float, default=1e-3,
+                        help='momentum for batchnorm of backbone  (default: 1e-3)')
     parser.add_argument("--output_stride", type=int, default=16,
-                        help="output stride for deeplabv3+ ")
+                        help="output stride for deeplabv3+")
     parser.add_argument("--use_separable_conv", action='store_true', default=False,
                         help="Use separable conv in ASPP and Decoder")
 
     # Train Options
+    parser.add_argument("--epochs", type=int, default=20,
+                        help="epoch number (default: 20)")
     parser.add_argument("--lr", type=float, default=3e-4,
                         help="learning rate (default: 3e-4)")
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='do crop for validation (default: False)')
-    parser.add_argument("--batch_size", type=int, default=8,
-                        help='batch Size (default: 8)')
+    parser.add_argument("--batch_size", type=int, default=10,
+                        help='batch size (default: 10)')
     parser.add_argument("--lr_policy", type=str, default='poly',
                         choices=['poly', 'step'], help="lr schedule policy (default: poly)")
     parser.add_argument("--lr_decay_step", type=int, default=2000,
@@ -63,24 +65,22 @@ def get_argparser():
                         help="path to trained model. Leave it None if you want to retrain your model")
     parser.add_argument("--loss_type", type=str, default='cross_entropy',
                         choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
-    parser.add_argument("--epochs", type=int, default=120,
-                        help="epoch number (default: 120)")
     parser.add_argument("--gpu_id", type=str, default='0', 
                         help="GPU ID")
     parser.add_argument("--no_nesterov", action='store_true', default=False,
                         help="Disable nesterov (default: False)")
     parser.add_argument("--momentum", type=float, default=0.9,
                         help='momentum for SGD (default: 0.9)')
-    parser.add_argument("--weight_decay", type=float, default=1e-4,
-                        help='weight decay (default: 1e-4)')
+    parser.add_argument("--weight_decay", type=float, default=5e-4,
+                        help='weight decay (default: 5e-4)')
     parser.add_argument("--crop_size", type=int, default=513,
                         help="crop size (default: 513)")
     parser.add_argument("--num_workers", type=int, default=4,
                         help='number of workers (default: 4)')
     parser.add_argument("--val_on_trainset", action='store_true', default=False ,
                         help="enable validation on train set (default: False)")
-    parser.add_argument("--random_seed", type=int, default=219,
-                        help="random seed (default: 219)")
+    parser.add_argument("--random_seed", type=int, default=23333,
+                        help="random seed (default: 23333)")
     parser.add_argument("--print_interval", type=int, default=10,
                         help="print interval of loss (default: 10)")
     parser.add_argument("--val_interval", type=int, default=1,
@@ -90,7 +90,9 @@ def get_argparser():
 
     # PASCAL VOC Options
     parser.add_argument("--year", type=str, default='2012',
-                        choices=['2012', '2011', '2009', '2008', '2007'], help='year of VOC' )
+                        choices=['2012_aug', '2012', '2011', '2009', '2008', '2007'], help='year of VOC' )
+    parser.add_argument("--train_aug_path", type=str, default='./datasets/data/VOCdevkit/VOC2012/SegmentationClassAug',
+                        help="Path to train_aug labels")
     
     # Deeplab Options
     parser.add_argument("--backbone", type=str, default='resnet50',
@@ -108,7 +110,6 @@ def get_argparser():
     return parser
 
 
-
 def get_dataset(opts):
     """ Dataset And Augmentation
     """
@@ -123,7 +124,6 @@ def get_dataset(opts):
         ])
 
         if opts.crop_val:
-            # crop in validation
             val_transform = ExtCompose([
                 ExtResize(size=opts.crop_size),
                 ExtCenterCrop(size=opts.crop_size),
@@ -139,7 +139,7 @@ def get_dataset(opts):
                             std=[0.229, 0.224, 0.225] ),
             ])
     
-        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=True, transform=train_transform)
+        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=True, transform=train_transform, train_aug_path=opts.train_aug_path)
         val_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='val', download=False, transform=val_transform)
         
     if opts.dataset=='cityscapes':
@@ -198,7 +198,6 @@ def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=N
     return epoch_loss / len(train_loader)
 
 
-
 def validate( model, loader, device, metrics, ret_samples_ids=None):
     """Do validation and return specified samples"""
     model.eval()
@@ -206,6 +205,7 @@ def validate( model, loader, device, metrics, ret_samples_ids=None):
     ret_samples = []
     with torch.no_grad():
         for i, (images, labels) in tqdm( enumerate( loader ) ):
+            
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
 
@@ -219,7 +219,6 @@ def validate( model, loader, device, metrics, ret_samples_ids=None):
         
         score = metrics.get_results()
     return score, ret_samples
-
 
 def main():
     opts = get_argparser().parse_args()
@@ -304,8 +303,6 @@ def main():
 
     # Set up criterion
     criterion = utils.get_loss(opts.loss_type)
-
-    
     #==========   Train Loop   ==========#
     
     vis_sample_id = np.random.randint(0, len(train_loader), opts.vis_sample_num, np.int32) if opts.enable_vis else None # sample idxs for visualization
