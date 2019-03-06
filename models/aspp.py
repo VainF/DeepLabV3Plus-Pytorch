@@ -13,7 +13,7 @@ class _ASPP(nn.Module):
         self.atrous_conv = Conv(inplanes, planes, kernel_size=kernel_size,
                                             stride=1, padding=padding, dilation=dilation, bias=False)
         self.bn = nn.BatchNorm2d(planes, momentum=momentum)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=True)
         self._init_weight()
 
     def forward(self, x):
@@ -44,12 +44,12 @@ class ASPP(nn.Module):
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
                                              nn.Conv2d(inplanes, 256, 1, stride=1, bias=False),
                                              nn.BatchNorm2d(256,momentum=momentum),
-                                             nn.ReLU())
+                                             nn.ReLU(inplace=True))
         
         self.reduce = nn.Sequential(
             nn.Conv2d(1280, 256, 1, bias=False),
             nn.BatchNorm2d(256, momentum=momentum),
-            nn.ReLU()
+            nn.ReLU(inplace=True)
         )
         self._init_weight()
 

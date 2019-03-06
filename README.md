@@ -7,20 +7,24 @@ Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
 * [Cityscapes](https://www.cityscapes-dataset.com) 
 
 ## Results
-### VOC2012Aug
-| Backbone   | Output Stride     | Overall Acc   | Mean IoU    |  Iters    |
+
+### VOC2012 trainaug
+| Backbone   | OS (Train/Val)    | Overall Acc   | Mean IoU    |  Iters    |
 | :--------: | :-------------:   | :-----------: | :--------:  |  :-----:  |
-| ResNet50   | 16                |               |             |   20k     |
-| ResNet101  | 16                | In Progress   | In Progress |   20k     |
+| ResNet50   | 16/8              |               |             |   20k     |
+| ResNet101  | 16/8              |               |             |   20k     |
+
+### CityScapes
+
 
 
 ## Quick Start
 ### 1. Requirements
-* Python 3
-* Pytorch 1.0.0+
+* Pytorch 1.0
 * Torchvision
 * Numpy
 * Pillow
+* scikit-learn
 * tqdm
 
 ### 2. Prepare Datasets
@@ -35,6 +39,7 @@ The data dir may be like this:
             /SegmentationClass
             /JPEGImages
             ...
+        ...
     /VOCtrainval_11-May-2012.tar
     ...
 ```
@@ -77,6 +82,7 @@ See chapter 4 of [2]
             /SegmentationClass
             /SegmentationClassAug
             /JPEGImages
+            ...
         ...
     /VOCtrainval_11-May-2012.tar
     ...
@@ -91,7 +97,7 @@ python train.py --backbone resnet50 --dataset voc --year 2012_aug --data_root ./
 
 * run with --crop_val to use cropped image for validation.
 
-* **8G GPU RAM** is required for batch size of 10. If GPU memory is limited, try to reduce batch size or change crop size. Note that batchnorm usually needs large bacth size. As an alternative, you can use [group normalization (GN)](https://arxiv.org/abs/1803.08494).
+* **10G GPU RAM** is required for batch size of 12. If GPU memory is limited, try to reduce crop size. Note that batchnorm needs large bacth size. As an alternative, you can try [group normalization (GN)](https://arxiv.org/abs/1803.08494).
 
 * Multi-Grid are **not introduced** in this repo according to the paper. see 4.3 of [2].
 

@@ -37,8 +37,8 @@ def get_argparser():
                         help="num classes (default: None)")
     
     # Model Options
-    parser.add_argument("--bn_mom", type=float, default=1e-3,
-                        help='momentum for batchnorm of backbone  (default: 1e-3)')
+    parser.add_argument("--bn_mom", type=float, default=1e-2,
+                        help='momentum for batchnorm of backbone  (default: 1e-2)')
     parser.add_argument("--output_stride", type=int, default=16,
                         help="output stride for deeplabv3+")
     parser.add_argument("--use_separable_conv", action='store_true', default=False,
@@ -51,8 +51,8 @@ def get_argparser():
                         help="learning rate (default: 3e-4)")
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='do crop for validation (default: False)')
-    parser.add_argument("--batch_size", type=int, default=10,
-                        help='batch size (default: 10)')
+    parser.add_argument("--batch_size", type=int, default=12,
+                        help='batch size (default: 12)')
     parser.add_argument("--lr_policy", type=str, default='poly',
                         choices=['poly', 'step'], help="lr schedule policy (default: poly)")
     parser.add_argument("--lr_decay_step", type=int, default=2000,
@@ -71,8 +71,8 @@ def get_argparser():
                         help="Disable nesterov (default: False)")
     parser.add_argument("--momentum", type=float, default=0.9,
                         help='momentum for SGD (default: 0.9)')
-    parser.add_argument("--weight_decay", type=float, default=5e-4,
-                        help='weight decay (default: 5e-4)')
+    parser.add_argument("--weight_decay", type=float, default=1e-4,
+                        help='weight decay (default: 1e-4)')
     parser.add_argument("--crop_size", type=int, default=513,
                         help="crop size (default: 513)")
     parser.add_argument("--num_workers", type=int, default=4,
@@ -113,7 +113,7 @@ def get_dataset(opts):
     """
     if opts.dataset=='voc':
         train_transform = ExtCompose( [ 
-            ExtRandomScale((0.5, 2.0)),
+            ExtRandomScale((0.8, 1.2)),
             ExtRandomCrop(size=(opts.crop_size, opts.crop_size), pad_if_needed=True),
             ExtRandomHorizontalFlip(),
             ExtToTensor(),
@@ -259,10 +259,17 @@ def main():
     metrics = StreamSegMetrics(opts.num_classes)
     
     # Set up optimizer
+    decay_1x, no_decay_1x = model_ref.group_params_1x()
+    decay_10x, no_decay_10x = model_ref.group_params_10x()
+    assert len(decay_1x)+len(no_decay_1x)+len(decay_10x)+len(no_decay_10x) == len( list( model_ref.parameters()) )
+
     optimizer = torch.optim.SGD(params=[ 
-        {"params": model_ref.group_params_1x(),  'lr': opts.lr },
-        {"params": model_ref.group_params_10x(),  'lr': opts.lr*10 }
-    ], lr=opts.lr, momentum=opts.momentum, weight_decay=opts.weight_decay, nesterov=False if opts.no_nesterov else True)
+        {"params": decay_1x, 'lr': opts.lr, 'weight_decay':opts.weight_decay},
+        {"params": no_decay_1x, 'lr': opts.lr},
+        {"params": decay_10x,  'lr': opts.lr*10, 'weight_decay':opts.weight_decay },
+        {"params": no_decay_10x,  'lr': opts.lr*10},
+    ], lr=opts.lr, momentum=opts.momentum, nesterov=False if opts.no_nesterov else True)
+
     if opts.lr_policy=='poly':
         scheduler = utils.PolyLR(optimizer, max_iters=opts.epochs*len(train_loader), power=opts.lr_power)
     elif opts.lr_policy=='step':
@@ -282,6 +289,7 @@ def main():
         cur_epoch = checkpoint["epoch"]+1
         best_score = checkpoint['best_score']
         print("Model restored from %s"%opts.ckpt)
+        del checkpoint # free memory
     else:
         print("[!] Retrain")
     

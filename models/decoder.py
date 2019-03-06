@@ -9,16 +9,16 @@ class Decoder(nn.Module):
         self.reduce_low_level = nn.Sequential( 
                 nn.Conv2d(low_level_channels, 48, 1, bias=False),
                 nn.BatchNorm2d(48, momentum=momentum),
-                nn.ReLU(),
+                nn.ReLU(inplace=True),
         )
 
         Conv = AtrousSeparableConvolution if use_separable_conv else nn.Conv2d
         self.decode_conv = nn.Sequential(Conv(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
                                          nn.BatchNorm2d(256, momentum=momentum),
-                                         nn.ReLU(),
+                                         nn.ReLU(inplace=True),
                                          Conv(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
                                          nn.BatchNorm2d(256, momentum=momentum),
-                                         nn.ReLU(),
+                                         nn.ReLU(inplace=True),
                                          nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
         self._init_weight()
     
