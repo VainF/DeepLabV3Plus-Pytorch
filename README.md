@@ -8,14 +8,11 @@ Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
 
 ## Results
 
-### VOC2012 trainaug
+### VOC2012 trainaug (In Pregress)
 | Backbone   | OS (Train/Val)    | Overall Acc   | Mean IoU    |  Iters    |
 | :--------: | :-------------:   | :-----------: | :--------:  |  :-----:  |
 | ResNet50   | 16/8              |               |             |   20k     |
 | ResNet101  | 16/8              |               |             |   20k     |
-
-### CityScapes
-
 
 
 ## Quick Start
@@ -60,9 +57,8 @@ To enable [visdom]((https://github.com/facebookresearch/visdom)) for visualizati
 visdom -port 13500
 
 # Train
-python train.py --backbone resnet50 --dataset voc --year 2012 --data_root ./datasets/data --lr 3e-4 --epochs 60  --batch_size 10 --enable_vis --vis_env deeplab --vis_port 13500
+python train.py --backbone resnet50 --dataset voc --year 2012 --data_root ./datasets/data --lr 3e-4 --epochs 60  --batch_size 12 --enable_vis --vis_env deeplab --vis_port 13500
 ```
-
 
 
 #### Train on PASCAL VOC2012 Aug (Recommended)
@@ -73,7 +69,7 @@ See chapter 4 of [2]
 
 *./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to **download extra annatations** from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). Those annotations come from [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet).
 
-**Please extract the SegmentationClassAug files to directory of VOC2012**
+**Please extract the SegmentationClassAug files to directory of VOC2012. And the directory should be like this:**
 
 ```
 /DATA_DIR
@@ -88,8 +84,9 @@ See chapter 4 of [2]
     ...
 ```
 
+Then run train.py with *"--year 2012_aug"*
 ```bash
-python train.py --backbone resnet50 --dataset voc --year 2012_aug --data_root ./datasets/data  --lr 3e-4 --epochs 20  --batch_size 10 --enable_vis --vis_env deeplab --vis_port 13500
+python train.py --backbone resnet50 --dataset voc --year 2012_aug --data_root ./datasets/data  --lr 3e-4 --epochs 20  --batch_size 12 --enable_vis --vis_env deeplab --vis_port 13500
 ```
 
 
@@ -97,7 +94,7 @@ python train.py --backbone resnet50 --dataset voc --year 2012_aug --data_root ./
 
 * run with --crop_val to use cropped image for validation.
 
-* **10G GPU RAM** is required for batch size of 12. If GPU memory is limited, try to reduce crop size. Note that batchnorm needs large bacth size. As an alternative, you can try [group normalization (GN)](https://arxiv.org/abs/1803.08494).
+* **9GB GPU Memory** is required for batch size of 12 and ResNet50. If GPU memory is limited, try to reduce crop size or batch size. Note that batchnorm needs large bacth size. As an alternative, you can try [group normalization (GN)](https://arxiv.org/abs/1803.08494).
 
 * Multi-Grid are **not introduced** in this repo according to the paper. see 4.3 of [2].
 

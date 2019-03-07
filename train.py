@@ -37,18 +37,18 @@ def get_argparser():
                         help="num classes (default: None)")
     
     # Model Options
-    parser.add_argument("--bn_mom", type=float, default=1e-2,
-                        help='momentum for batchnorm of backbone  (default: 1e-2)')
+    parser.add_argument("--bn_mom", type=float, default=3e-4,
+                        help='momentum for batchnorm of backbone  (default: 3e-4)')
     parser.add_argument("--output_stride", type=int, default=16,
                         help="output stride for deeplabv3+")
     parser.add_argument("--use_separable_conv", action='store_true', default=False,
                         help="Use separable conv in ASPP and Decoder")
 
     # Train Options
-    parser.add_argument("--epochs", type=int, default=20,
-                        help="epoch number (default: 20)")
-    parser.add_argument("--lr", type=float, default=3e-4,
-                        help="learning rate (default: 3e-4)")
+    parser.add_argument("--epochs", type=int, default=30,
+                        help="epoch number (default: 30)")
+    parser.add_argument("--lr", type=float, default=1e-3,
+                        help="learning rate (default: 1e-3)")
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='do crop for validation (default: False)')
     parser.add_argument("--batch_size", type=int, default=12,
@@ -71,8 +71,8 @@ def get_argparser():
                         help="Disable nesterov (default: False)")
     parser.add_argument("--momentum", type=float, default=0.9,
                         help='momentum for SGD (default: 0.9)')
-    parser.add_argument("--weight_decay", type=float, default=1e-4,
-                        help='weight decay (default: 1e-4)')
+    parser.add_argument("--weight_decay", type=float, default=5e-4,
+                        help='weight decay (default: 5e-4)')
     parser.add_argument("--crop_size", type=int, default=513,
                         help="crop size (default: 513)")
     parser.add_argument("--num_workers", type=int, default=4,
@@ -87,6 +87,8 @@ def get_argparser():
                         help="epoch interval for eval (default: 1)")
     parser.add_argument("--ckpt_interval", type=int, default=1,
                         help="saving interval (default: 1)")
+    parser.add_argument("--download", action='store_true', default=False,
+                        help="download datasets")
 
     # PASCAL VOC Options
     parser.add_argument("--year", type=str, default='2012',
@@ -113,7 +115,7 @@ def get_dataset(opts):
     """
     if opts.dataset=='voc':
         train_transform = ExtCompose( [ 
-            ExtRandomScale((0.8, 1.2)),
+            ExtRandomScale((0.5, 2.0)),
             ExtRandomCrop(size=(opts.crop_size, opts.crop_size), pad_if_needed=True),
             ExtRandomHorizontalFlip(),
             ExtToTensor(),
@@ -137,7 +139,7 @@ def get_dataset(opts):
                             std=[0.229, 0.224, 0.225] ),
             ])
     
-        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=True, transform=train_transform)
+        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=opts.download, transform=train_transform)
         val_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='val', download=False, transform=val_transform)
         
     if opts.dataset=='cityscapes':
@@ -157,7 +159,7 @@ def get_dataset(opts):
                           std=[0.229, 0.224, 0.225] ),
         ] )
 
-        train_dst = Cityscapes(root=opts.data_root, split='train', download=True, transform=train_transform)
+        train_dst = Cityscapes(root=opts.data_root, split='train', download=opts.download, transform=train_transform)
         val_dst = Cityscapes(root=opts.data_root, split='val', download=False, transform=val_transform)
     return train_dst, val_dst
 
@@ -168,6 +170,7 @@ def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=N
     
     model.train()
     epoch_loss = 0.0
+    interval_loss = 0.0
     for cur_step, (images, labels) in enumerate( train_loader ):
         if scheduler is not None:
             scheduler.step()
@@ -184,15 +187,17 @@ def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=N
 
         np_loss = loss.detach().cpu().numpy()
         epoch_loss+=np_loss
+        interval_loss+=np_loss
 
         if (cur_step+1)%print_interval==0:
-            print("Epoch %d, Batch %d/%d, Loss=%f"%(cur_epoch, cur_step+1, len(train_loader), np_loss))
+            interval_loss = interval_loss/print_interval
+            print("Epoch %d, Batch %d/%d, Loss=%f"%(cur_epoch, cur_step+1, len(train_loader), interval_loss))
+            # visualization
+            if vis is not None:
+                x = cur_epoch*len(train_loader) + cur_step + 1
+                vis.vis_scalar('Loss', x, interval_loss )
+            interval_loss=0.0
         
-        # visualization
-        if vis is not None:
-            x = cur_epoch*len(train_loader) + cur_step + 1
-            vis.vis_scalar('Loss', x, np_loss )
-    
     return epoch_loss / len(train_loader)
 
 

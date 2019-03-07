@@ -9,22 +9,21 @@ class _ASPP(nn.Module):
     def __init__(self, inplanes, planes, kernel_size, padding, dilation, momentum, use_separable_conv=False):
         super(_ASPP, self).__init__()
         
-        Conv = AtrousSeparableConvolution if use_separable_conv else nn.Conv2d
-        self.atrous_conv = Conv(inplanes, planes, kernel_size=kernel_size,
-                                            stride=1, padding=padding, dilation=dilation, bias=False)
-        self.bn = nn.BatchNorm2d(planes, momentum=momentum)
-        self.relu = nn.ReLU(inplace=True)
+        if use_separable_conv:
+            self.atrous_conv_bn_relu = AtrousSeparableConvolution(inplanes, planes, kernel_size=kernel_size, stride=1, padding=padding, dilation=dilation, bias=False, momentum=momentum)
+        else:
+            self.atrous_conv_bn_relu = nn.Sequential( nn.Conv2d(inplanes, planes, kernel_size=kernel_size, stride=1, padding=padding, dilation=dilation, bias=False),
+                                                      nn.BatchNorm2d(planes, momentum=momentum),
+                                                      nn.ReLU(inplace=True))
         self._init_weight()
 
     def forward(self, x):
-        x = self.atrous_conv(x)
-        x = self.bn(x)
-        return self.relu(x)
-
+        return self.atrous_conv_bn_relu(x)
+        
     def _init_weight(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                torch.nn.init.xavier_normal_(m.weight)
+                torch.nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -51,6 +50,7 @@ class ASPP(nn.Module):
             nn.BatchNorm2d(256, momentum=momentum),
             nn.ReLU(inplace=True)
         )
+        
         self._init_weight()
 
     def forward(self, x):
@@ -67,7 +67,7 @@ class ASPP(nn.Module):
     def _init_weight(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight)
+                torch.nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()

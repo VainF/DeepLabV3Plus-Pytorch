@@ -40,8 +40,8 @@ def get_argparser():
                         help="num classes (default: None)")
     
     # Model Options
-    parser.add_argument("--bn_mom", type=float, default=1e-3,
-                        help='momentum for batchnorm of backbone  (default: 1e-3)')
+    parser.add_argument("--bn_mom", type=float, default=3e-4,
+                        help='momentum for batchnorm of backbone  (default: 3e-4)')
     parser.add_argument("--output_stride", type=int, default=16,
                         help="output stride for deeplabv3+")
     parser.add_argument("--use_separable_conv", action='store_true', default=False,
@@ -180,6 +180,10 @@ def main():
     model.eval()
     metrics.reset()
     idx = 0
+
+    if opts.save_path is not None:
+        import matplotlib.pyplot as plt
+
     with torch.no_grad():
         for i, (images, labels) in tqdm( enumerate( val_loader ) ):
 
@@ -204,6 +208,12 @@ def main():
                     Image.fromarray(image).save(os.path.join(opts.save_path, '%d_image.png'%idx) )
                     Image.fromarray(target).save(os.path.join(opts.save_path, '%d_target.png'%idx) )
                     Image.fromarray(pred).save(os.path.join(opts.save_path, '%d_pred.png'%idx) )
+                    
+                    fig = plt.figure()
+                    plt.imshow(image)
+                    plt.imshow(pred, alpha=0.6)
+                    plt.savefig(os.path.join(opts.save_path, '%d_overlay.png'%idx))
+                    plt.close()
                     idx+=1
                 
     score = metrics.get_results()

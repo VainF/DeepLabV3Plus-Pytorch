@@ -19,8 +19,8 @@ class DeepLabv3(nn.Module):
         else:
             raise "[!] Backbone %s not supported yet!"%backbone
         
-        self.aspp = build_aspp(inplanes=features_channels, output_stride=output_stride, momentum=momentum, use_separable_conv=use_separable_conv)
-        self.decoder =  build_decoder(num_classes=num_classes, low_level_channels=low_level_channels, momentum=momentum, use_separable_conv=use_separable_conv)
+        self.aspp = build_aspp(inplanes=features_channels, output_stride=output_stride, momentum=0.1, use_separable_conv=use_separable_conv)
+        self.decoder =  build_decoder(num_classes=num_classes, low_level_channels=low_level_channels, momentum=0.1, use_separable_conv=use_separable_conv)
 
     def forward(self, x):
         in_size = x.shape[2:]
@@ -32,7 +32,7 @@ class DeepLabv3(nn.Module):
     def group_params_1x(self):
         group_decay = []
         group_no_decay = []
-
+        
         for m in self.backbone.modules():
             if isinstance(m, nn.Conv2d):
                 if m.weight.requires_grad:
