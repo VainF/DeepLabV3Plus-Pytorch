@@ -6,27 +6,33 @@ Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
 * [Cityscapes](https://www.cityscapes-dataset.com) 
 
+## Metrics
+Pixel Accuracy and Mean IoU are used as metrics. Note that mIoU and Acc are calculated using confusion matrix.
+
 ## Results
+### VOC2012 trainaug 
 
-### VOC2012 trainaug (In Pregress)
-| Backbone   | OS (Train/Val)    | Overall Acc   | Mean IoU    |  Iters    |
-| :--------: | :-------------:   | :-----------: | :--------:  |  :-----:  |
-| ResNet50   | 16/8              |               |             |   20k     |
-| ResNet101  | 16/8              |               |             |   20k     |
+All models are evaluated on cropped images.
 
+| Backbone          | OS (Train/Val)     | Overall Acc   | Mean IoU        |  Fix BN   | Separable Conv  |       
+| :--------:        | :-------------:    | :-----------: | :--------:      |  :-----:  | :--------:      |
+| ResNet101         | 16/16              |  93.57%       |  75.31%         |    Yes    |     No          |
+| ResNet101         | 16/16              |               |                 |    Yes    |     Yes          |
+| ResNet101 (Paper) | 16/16              |    -          |  78.85%         |    No     |     Yes         |
 
 ## Quick Start
 ### 1. Requirements
-* Pytorch 1.0
+* Pytorch
 * Torchvision
 * Numpy
 * Pillow
 * scikit-learn
 * tqdm
+* matplotlib
 
 ### 2. Prepare Datasets
 
-Data will be automatically downloaded and extracted. The default path is ./datasets/data. Or you can manually put the downloaded files *(e.g. VOCtrainval_11-May-2012.tar)* under any directory. Please specify your data root with **--data_root PATH/TO/DATA_DIR** if necessary. 
+Data will be automatically downloaded and extracted into ./datasets/data with **"--donwload"** options. Or you can change the data root with **--data_root PATH/TO/YOUR/DATA_DIR**. 
 
 The data dir may be like this:  
 ```
@@ -43,33 +49,15 @@ The data dir may be like this:
 
 ### 3. Train
 
-#### Train on Standard PASCAL VOC2012
-You can run the scripts directly without any preparing. training will start after downloading and extraction.
-
-```bash
-python train.py --backbone resnet50 --dataset voc --year 2012 --data_root ./datasets/data --lr 3e-4 --epochs 60 --batch_size 10 
-```
-
-##### Enable Visdom
-To enable [visdom]((https://github.com/facebookresearch/visdom)) for visualization, run the following commands separately.
-```bash
-# Run visdom server on port 13500
-visdom -port 13500
-
-# Train
-python train.py --backbone resnet50 --dataset voc --year 2012 --data_root ./datasets/data --lr 3e-4 --epochs 60  --batch_size 12 --enable_vis --vis_env deeplab --vis_port 13500
-```
-
-
 #### Train on PASCAL VOC2012 Aug (Recommended)
 
 See chapter 4 of [2]
 
          The original dataset contains 1464 (train), 1449 (val), and 1456 (test) pixel-level annotated images. We augment the dataset by the extra annotations provided by [76], resulting in 10582 (trainaug) training images. The performance is measured in terms of pixel intersection-over-union averaged across the 21 classes (mIOU).
 
-*./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to **download extra annatations** from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). Those annotations come from [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet).
+*./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to download annatations from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). Those annotations come from [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet).
 
-**Please extract the SegmentationClassAug files to directory of VOC2012. And the directory should be like this:**
+**Please extract trainaug files (SegmentationClassAug) to the VOC2012 directory.**
 
 ```
 /DATA_DIR
@@ -86,15 +74,28 @@ See chapter 4 of [2]
 
 Then run train.py with *"--year 2012_aug"*
 ```bash
-python train.py --backbone resnet50 --dataset voc --year 2012_aug --data_root ./datasets/data  --lr 3e-4 --epochs 20  --batch_size 12 --enable_vis --vis_env deeplab --vis_port 13500
+python train.py --backbone resnet50 --dataset voc --year 2012_aug --data_root ./datasets/data  --lr 3e-4 --epochs 20  --batch_size 12 --use_seperable_conv --fix_bn --enable_vis --vis_env deeplab --vis_port 13500 
 ```
 
 
+#### Train on Standard PASCAL VOC2012
+```bash
+python train.py --backbone resnet101 --dataset voc --year 2012 --data_root ./datasets/data --lr 7e-4 --epochs 30 --batch_size 10
+```
+
+##### Enable Visdom
+To enable [visdom]((https://github.com/facebookresearch/visdom)) for visualization, run the following commands separately.
+```bash
+# Run visdom server on port 13500
+visdom -port 13500
+
+# Train
+python train.py --backbone resnet50 --dataset voc --year 2012 --data_root ./datasets/data --lr 3e-4 --epochs 60  --batch_size 12 --enable_vis --vis_env deeplab --vis_port 13500
+```
+
 ## More Details
 
-* run with --crop_val to use cropped image for validation.
-
-* **9GB GPU Memory** is required for batch size of 12 and ResNet50. If GPU memory is limited, try to reduce crop size or batch size. Note that batchnorm needs large bacth size. As an alternative, you can try [group normalization (GN)](https://arxiv.org/abs/1803.08494).
+* If GPU memory is limited, try to reduce crop size or batch size. Note that batchnorm needs large bacth size. As an alternative, you can try [group normalization (GN)](https://arxiv.org/abs/1803.08494).
 
 * Multi-Grid are **not introduced** in this repo according to the paper. see 4.3 of [2].
 

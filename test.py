@@ -50,6 +50,8 @@ def get_argparser():
     # Train Options
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='do crop for validation (default: False)')
+    parser.add_argument("--download", action='store_true', default=False,
+                        help='download datasets (default: False)')
     parser.add_argument("--batch_size", type=int, default=12,
                         help='batch size (default: 12)')
     parser.add_argument("--ckpt", default=None, type=str,
@@ -102,7 +104,7 @@ def get_dataset(opts):
                             std=[0.229, 0.224, 0.225] ),
             ])
     
-        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=True, transform=train_transform)
+        train_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='train', download=opts.download, transform=train_transform)
         val_dst = VOCSegmentation(root=opts.data_root, year=opts.year, image_set='val', download=False, transform=val_transform)
         
     if opts.dataset=='cityscapes':
@@ -122,7 +124,7 @@ def get_dataset(opts):
                           std=[0.229, 0.224, 0.225] ),
         ] )
 
-        train_dst = Cityscapes(root=opts.data_root, split='train', download=True, target_type='semantic',  transform=train_transform)
+        train_dst = Cityscapes(root=opts.data_root, split='train', download=opts.download, target_type='semantic',  transform=train_transform)
         val_dst = Cityscapes(root=opts.data_root, split='test', target_type='semantic', download=False, transform=val_transform)
     return train_dst, val_dst
 

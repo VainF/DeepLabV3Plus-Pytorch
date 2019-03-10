@@ -17,7 +17,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 from utils.visualizer import Visualizer
 
-
 def modify_command_options(opts):
     if opts.dataset=='voc':
         opts.num_classes = 21
@@ -47,8 +46,10 @@ def get_argparser():
     # Train Options
     parser.add_argument("--epochs", type=int, default=30,
                         help="epoch number (default: 30)")
-    parser.add_argument("--lr", type=float, default=1e-3,
-                        help="learning rate (default: 1e-3)")
+    parser.add_argument("--lr", type=float, default=7e-4,
+                        help="learning rate (default: 7e-4)")
+    parser.add_argument("--fix_bn", action='store_true', default=False,
+                        help='fix batch normalization during training (default: False)')
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='do crop for validation (default: False)')
     parser.add_argument("--batch_size", type=int, default=12,
@@ -68,11 +69,11 @@ def get_argparser():
     parser.add_argument("--gpu_id", type=str, default='0', 
                         help="GPU ID")
     parser.add_argument("--no_nesterov", action='store_true', default=False,
-                        help="Disable nesterov (default: False)")
+                        help="Enable nesterov (default: False)")
     parser.add_argument("--momentum", type=float, default=0.9,
                         help='momentum for SGD (default: 0.9)')
-    parser.add_argument("--weight_decay", type=float, default=5e-4,
-                        help='weight decay (default: 5e-4)')
+    parser.add_argument("--weight_decay", type=float, default=1e-4,
+                        help='weight decay (default: 1e-4)')
     parser.add_argument("--crop_size", type=int, default=513,
                         help="crop size (default: 513)")
     parser.add_argument("--num_workers", type=int, default=4,
@@ -167,8 +168,6 @@ def get_dataset(opts):
 def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=None, print_interval=10, vis=None):
     """Train and return epoch loss"""
     print("Epoch %d, lr = %f"%(cur_epoch, optim.param_groups[0]['lr']))
-    
-    model.train()
     epoch_loss = 0.0
     interval_loss = 0.0
     for cur_step, (images, labels) in enumerate( train_loader ):
@@ -178,10 +177,10 @@ def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=N
         labels = labels.to(device, dtype=torch.long)
 
         # N, C, H, W
+        optim.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
-
-        optim.zero_grad()
+    
         loss.backward()
         optim.step()
 
@@ -203,7 +202,6 @@ def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=N
 
 def validate( model, loader, device, metrics, ret_samples_ids=None):
     """Do validation and return specified samples"""
-    model.eval()
     metrics.reset()
     ret_samples = []
     with torch.no_grad():
@@ -248,10 +246,13 @@ def main():
     train_loader = data.DataLoader(train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=opts.num_workers)
     val_loader = data.DataLoader(val_dst, batch_size=opts.batch_size if opts.crop_val else 1 , shuffle=False, num_workers=opts.num_workers)
     print("Dataset: %s, Train set: %d, Val set: %d"%(opts.dataset, len(train_dst), len(val_dst)))
-    
+
     # Set up model
     print("Backbone: %s"%opts.backbone)
     model = DeepLabv3(num_classes=opts.num_classes, backbone=opts.backbone, pretrained=True, momentum=opts.bn_mom, output_stride=opts.output_stride, use_separable_conv=opts.use_separable_conv)
+    if opts.fix_bn==True:
+        model.fix_bn()
+
     if torch.cuda.device_count()>1: # Parallel
         print("%d GPU parallel"%(torch.cuda.device_count()))
         model = torch.nn.DataParallel(model)
@@ -266,22 +267,22 @@ def main():
     # Set up optimizer
     decay_1x, no_decay_1x = model_ref.group_params_1x()
     decay_10x, no_decay_10x = model_ref.group_params_10x()
-    assert len(decay_1x)+len(no_decay_1x)+len(decay_10x)+len(no_decay_10x) == len( list( model_ref.parameters()) )
-
     optimizer = torch.optim.SGD(params=[ 
         {"params": decay_1x, 'lr': opts.lr, 'weight_decay':opts.weight_decay},
         {"params": no_decay_1x, 'lr': opts.lr},
         {"params": decay_10x,  'lr': opts.lr*10, 'weight_decay':opts.weight_decay },
         {"params": no_decay_10x,  'lr': opts.lr*10},
-    ], lr=opts.lr, momentum=opts.momentum, nesterov=False if opts.no_nesterov else True)
-
+    ], lr=opts.lr, momentum=opts.momentum, nesterov=not opts.no_nesterov)
+    del decay_1x, no_decay_1x, decay_10x, no_decay_10x
+    
     if opts.lr_policy=='poly':
         scheduler = utils.PolyLR(optimizer, max_iters=opts.epochs*len(train_loader), power=opts.lr_power)
     elif opts.lr_policy=='step':
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.lr_decay_step, gamma=opts.lr_decay_factor)
-    
     print("Optimizer:\n%s"%(optimizer))
     
+
+
     utils.mkdir('checkpoints')
     # Restore
     best_score = 0.0
@@ -316,12 +317,16 @@ def main():
     criterion = utils.get_loss(opts.loss_type)
     #==========   Train Loop   ==========#
     
-    vis_sample_id = np.random.randint(0, len(train_loader), opts.vis_sample_num, np.int32) if opts.enable_vis else None # sample idxs for visualization
+    vis_sample_id = np.random.randint(0, len(val_loader), opts.vis_sample_num, np.int32) if opts.enable_vis else None # sample idxs for visualization
     label2color = utils.Label2Color(cmap=utils.color_map(opts.dataset)) # convert labels to images
     denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406],  
                                std=[0.229, 0.224, 0.225])  # denormalization for ori images
     while cur_epoch < opts.epochs:
         # =====  Train  =====
+        model.train()
+        if opts.fix_bn==True:
+            model_ref.fix_bn()
+
         epoch_loss = train(cur_epoch=cur_epoch, criterion=criterion, model=model, optim=optimizer, train_loader=train_loader, device=device, scheduler=scheduler, vis=vis)
         print("End of Epoch %d/%d, Average Loss=%f"%(cur_epoch, opts.epochs, epoch_loss))
         if opts.enable_vis:
@@ -334,6 +339,7 @@ def main():
         # =====  Validation  =====
         if (cur_epoch+1)%opts.val_interval==0:
             print("validate on val set...")
+            model.eval()
             val_score, ret_samples = validate(model=model, loader=val_loader, device=device, metrics=metrics, ret_samples_ids=vis_sample_id)
             print(metrics.to_str(val_score))
 

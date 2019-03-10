@@ -9,25 +9,14 @@ class _ASPP(nn.Module):
     def __init__(self, inplanes, planes, kernel_size, padding, dilation, momentum, use_separable_conv=False):
         super(_ASPP, self).__init__()
         
-        if use_separable_conv:
-            self.atrous_conv_bn_relu = AtrousSeparableConvolution(inplanes, planes, kernel_size=kernel_size, stride=1, padding=padding, dilation=dilation, bias=False, momentum=momentum)
-        else:
-            self.atrous_conv_bn_relu = nn.Sequential( nn.Conv2d(inplanes, planes, kernel_size=kernel_size, stride=1, padding=padding, dilation=dilation, bias=False),
-                                                      nn.BatchNorm2d(planes, momentum=momentum),
-                                                      nn.ReLU(inplace=True))
-        self._init_weight()
+        Conv = AtrousSeparableConvolution if ( use_separable_conv and kernel_size>1 )  else nn.Conv2d
+        self.atrous_conv_bn_relu = nn.Sequential( Conv(inplanes, planes, kernel_size=kernel_size, stride=1, padding=padding, dilation=dilation, bias=False),
+                                                  nn.BatchNorm2d(planes, momentum=momentum),
+                                                  nn.ReLU(inplace=True))
 
     def forward(self, x):
         return self.atrous_conv_bn_relu(x)
         
-    def _init_weight(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
 class ASPP(nn.Module):
     def __init__(self, inplanes, output_stride, momentum=0.1,use_separable_conv=False):
         super(ASPP, self).__init__()
@@ -50,7 +39,7 @@ class ASPP(nn.Module):
             nn.BatchNorm2d(256, momentum=momentum),
             nn.ReLU(inplace=True)
         )
-        
+
         self._init_weight()
 
     def forward(self, x):

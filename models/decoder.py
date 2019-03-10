@@ -11,21 +11,17 @@ class Decoder(nn.Module):
                 nn.BatchNorm2d(48, momentum=momentum),
                 nn.ReLU(inplace=True),
         )
-        if use_separable_conv:
-            self.last_conv = nn.Sequential( AtrousSeparableConvolution(304, 256, kernel_size=3, stride=1, padding=1, bias=False, dilation=1, momentum=momentum ),
-                                            AtrousSeparableConvolution(256, 256, kernel_size=3, stride=1, padding=1, bias=False, dilation=1, momentum=momentum ),
-                                            nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
-        else:
-            self.last_conv = nn.Sequential( nn.Conv2d(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
-                                            nn.BatchNorm2d(256, momentum=momentum),
-                                            nn.ReLU(inplace=True),
-                                            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
-                                            nn.BatchNorm2d(256, momentum=momentum),
-                                            nn.ReLU(inplace=True),
-                                            nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
+
+        Conv = AtrousSeparableConvolution if use_separable_conv else nn.Conv2d
+        self.last_conv = nn.Sequential( Conv(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
+                                        nn.BatchNorm2d(256, momentum=momentum),
+                                        nn.ReLU(inplace=True),
+                                        Conv(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
+                                        nn.BatchNorm2d(256, momentum=momentum),
+                                        nn.ReLU(inplace=True),
+                                        nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
         self._init_weight()
     
-
     def forward(self, x, low_level_features):
         low_level_features = self.reduce_low_level(low_level_features)
         x = F.interpolate(x, size=low_level_features.shape[2:], mode='bilinear', align_corners=False)
