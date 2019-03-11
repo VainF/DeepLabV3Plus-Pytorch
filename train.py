@@ -288,10 +288,10 @@ def main():
     if opts.ckpt is not None and os.path.isfile(opts.ckpt):
         checkpoint = torch.load(opts.ckpt)
         model_ref.load_state_dict(checkpoint["model_state"])
-        #optimizer.load_state_dict(checkpoint["optimizer_state"])
-        #scheduler.load_state_dict(checkpoint["scheduler_state"])
-        #cur_epoch = checkpoint["epoch"]+1
-        #best_score = checkpoint['best_score']
+        optimizer.load_state_dict(checkpoint["optimizer_state"])
+        scheduler.load_state_dict(checkpoint["scheduler_state"])
+        cur_epoch = checkpoint["epoch"]+1
+        best_score = checkpoint['best_score']
         print("Model restored from %s"%opts.ckpt)
         del checkpoint # free memory
     else:
