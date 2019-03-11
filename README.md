@@ -7,6 +7,10 @@ Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611). Pretra
 
 ## Results
 
+#### Metrics
+
+**Mean IoU** and **Overall Accuracy** are calculated using confusion matrix. (please see metrics/stream_metrics.py for more details).
+
 #### Crop Evaluation
 
 The model are trained with **small batch size (8) and fixed batchnorm** due to GPU memory limitations. It required 8GB to train deeplab on one Quadro P5000. Please try to use larger batch size and finetune batchnorm if you want better performance.
