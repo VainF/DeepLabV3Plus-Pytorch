@@ -79,7 +79,6 @@ class StreamSegMetrics(_StreamMetrics):
                 "Class IoU": cls_iu,
             }
         
-
     def reset(self):
         self.confusion_matrix = np.zeros((self.n_classes, self.n_classes))
 

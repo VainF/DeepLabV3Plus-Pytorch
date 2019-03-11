@@ -46,8 +46,8 @@ def get_argparser():
     # Train Options
     parser.add_argument("--epochs", type=int, default=30,
                         help="epoch number (default: 30)")
-    parser.add_argument("--lr", type=float, default=7e-4,
-                        help="learning rate (default: 7e-4)")
+    parser.add_argument("--lr", type=float, default=4e-4,
+                        help="learning rate (default: 4e-4)")
     parser.add_argument("--fix_bn", action='store_true', default=False,
                         help='fix batch normalization during training (default: False)')
     parser.add_argument("--crop_val", action='store_true', default=False,
@@ -56,8 +56,8 @@ def get_argparser():
                         help='batch size (default: 12)')
     parser.add_argument("--lr_policy", type=str, default='poly',
                         choices=['poly', 'step'], help="lr schedule policy (default: poly)")
-    parser.add_argument("--lr_decay_step", type=int, default=2000,
-                        help="decay step for stepLR (default: 2000)")
+    parser.add_argument("--lr_decay_step", type=int, default=5000,
+                        help="decay step for stepLR (default: 5000)")
     parser.add_argument("--lr_decay_factor", type=float, default=0.1,
                         help="decay factor for stepLR (default: 0.1)")
     parser.add_argument("--lr_power", type=float, default=0.9,
@@ -96,8 +96,8 @@ def get_argparser():
                         choices=['2012_aug', '2012', '2011', '2009', '2008', '2007'], help='year of VOC' )
     
     # Deeplab Options
-    parser.add_argument("--backbone", type=str, default='resnet50',
-                        choices=['resnet50', 'resnet101', 'resnet'], help='backbone for deeplab' )
+    parser.add_argument("--backbone", type=str, default='resnet101',
+                        choices=['resnet50', 'resnet101'], help='backbone for deeplab' )
 
     # Visdom options
     parser.add_argument("--enable_vis", action='store_true', default=False,
@@ -281,8 +281,6 @@ def main():
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.lr_decay_step, gamma=opts.lr_decay_factor)
     print("Optimizer:\n%s"%(optimizer))
     
-
-
     utils.mkdir('checkpoints')
     # Restore
     best_score = 0.0
@@ -290,10 +288,10 @@ def main():
     if opts.ckpt is not None and os.path.isfile(opts.ckpt):
         checkpoint = torch.load(opts.ckpt)
         model_ref.load_state_dict(checkpoint["model_state"])
-        optimizer.load_state_dict(checkpoint["optimizer_state"])
-        scheduler.load_state_dict(checkpoint["scheduler_state"])
-        cur_epoch = checkpoint["epoch"]+1
-        best_score = checkpoint['best_score']
+        #optimizer.load_state_dict(checkpoint["optimizer_state"])
+        #scheduler.load_state_dict(checkpoint["scheduler_state"])
+        #cur_epoch = checkpoint["epoch"]+1
+        #best_score = checkpoint['best_score']
         print("Model restored from %s"%opts.ckpt)
         del checkpoint # free memory
     else:
@@ -309,7 +307,6 @@ def main():
                     "scheduler_state": scheduler.state_dict(),
                     "best_score": best_score,
         }
-        #path = 'checkpoints/deeplab_%s_%s_epoch%d.pkl'%(opts.backbone, opts.dataset, cur_epoch)
         torch.save(state, path)
         print( "Model saved as %s"%path )
 
@@ -363,6 +360,7 @@ def main():
 
             if opts.val_on_trainset==True: # validate on train set
                 print("validate on train set...")
+                model.eval()
                 train_score, _ = validate(model=model, loader=train_loader, device=device, metrics=metrics)
                 print(metrics.to_str(train_score))
                 if vis is not None:

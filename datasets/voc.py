@@ -79,7 +79,7 @@ class VOCSegmentation(data.Dataset):
         self.filename = DATASET_YEAR_DICT[year]['filename']
         self.md5 = DATASET_YEAR_DICT[year]['md5']
         self.transform = transform
-        #self.target_transform = target_transform
+        
         self.image_set = image_set
         base_dir = DATASET_YEAR_DICT[year]['base_dir']
         voc_root = os.path.join(self.root, base_dir)

@@ -18,6 +18,7 @@ import torch.nn as nn
 from utils.visualizer import Visualizer
 
 
+
 def modify_command_options(opts):
     if opts.dataset=='voc':
         opts.num_classes = 21
@@ -166,8 +167,6 @@ def main():
         utils.mkdir(opts.save_path)
 
     # Restore
-    best_score = 0.0
-    cur_epoch = 0
     if opts.ckpt is not None and os.path.isfile(opts.ckpt):
         checkpoint = torch.load(opts.ckpt)
         model_ref.load_state_dict(checkpoint["model_state"])
@@ -178,17 +177,18 @@ def main():
     label2color = utils.Label2Color(cmap=utils.color_map(opts.dataset)) # convert labels to images
     denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406],  
                                std=[0.229, 0.224, 0.225])  # denormalization for ori images
-
     model.eval()
     metrics.reset()
     idx = 0
 
     if opts.save_path is not None:
+        import matplotlib
+        matplotlib.use('Agg')
         import matplotlib.pyplot as plt
+        
 
     with torch.no_grad():
         for i, (images, labels) in tqdm( enumerate( val_loader ) ):
-
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
 
@@ -213,8 +213,12 @@ def main():
                     
                     fig = plt.figure()
                     plt.imshow(image)
-                    plt.imshow(pred, alpha=0.6)
-                    plt.savefig(os.path.join(opts.save_path, '%d_overlay.png'%idx))
+                    plt.axis('off')
+                    plt.imshow(pred, alpha=0.7)
+                    ax = plt.gca()
+                    ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator())
+                    ax.yaxis.set_major_locator(matplotlib.ticker.NullLocator())
+                    plt.savefig(os.path.join(opts.save_path, '%d_overlay.png'%idx), bbox_inches='tight', pad_inches=0)
                     plt.close()
                     idx+=1
                 

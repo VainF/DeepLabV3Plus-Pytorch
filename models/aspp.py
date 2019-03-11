@@ -25,7 +25,7 @@ class ASPP(nn.Module):
         elif output_stride == 8:
             dilations = [1, 12, 24, 36]
 
-        self.aspp1 = _ASPP(inplanes, 256, 1, padding=0, dilation=dilations[0], momentum=momentum, use_separable_conv=use_separable_conv)
+        self.aspp1 = _ASPP(inplanes, 256, 1, padding=0,            dilation=dilations[0], momentum=momentum, use_separable_conv=use_separable_conv)
         self.aspp2 = _ASPP(inplanes, 256, 3, padding=dilations[1], dilation=dilations[1], momentum=momentum, use_separable_conv=use_separable_conv)
         self.aspp3 = _ASPP(inplanes, 256, 3, padding=dilations[2], dilation=dilations[2], momentum=momentum, use_separable_conv=use_separable_conv)
         self.aspp4 = _ASPP(inplanes, 256, 3, padding=dilations[3], dilation=dilations[3], momentum=momentum, use_separable_conv=use_separable_conv)

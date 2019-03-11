@@ -62,13 +62,10 @@ class DeepLabv3(nn.Module):
             for m in module.modules():
                 if isinstance(m, nn.Conv2d):
                     if m.weight.requires_grad:
-                        if m.groups==1:
-                            group_decay.append(m.weight)
-                        else: # no decay for weight of separable conv
-                            group_no_decay.append(m.weight)
+                        group_decay.append(m.weight)
                     if m.bias is not None and m.bias.requires_grad:
                         group_no_decay.append(m.bias)
-
+                
                 elif isinstance(m, nn.BatchNorm2d):
                     for p in m.parameters():
                         if p.requires_grad:
