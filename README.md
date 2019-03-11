@@ -85,7 +85,7 @@ You can run train.py with "--download" option to download and extract pascal voc
 
 See chapter 4 of [2]
 
-         The original dataset contains 1464 (train), 1449 (val), and 1456 (test) pixel-level annotated images. We augment the dataset by the extra annotations provided by [76], resulting in 10582 (trainaug) training images. The performance is measured in terms of pixel intersection-over-union averaged across the 21 classes (mIOU).
+        The original dataset contains 1464 (train), 1449 (val), and 1456 (test) pixel-level annotated images. We augment the dataset by the extra annotations provided by [76], resulting in 10582 (trainaug) training images. The performance is measured in terms of pixel intersection-over-union averaged across the 21 classes (mIOU).
 
 *./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to download extra annatations from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). Those annotations come from [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet).
 
@@ -146,8 +146,8 @@ python test.py --backbone resnet101 --dataset voc --year 2012 --data_root ./data
 
         Note that we do not employ the multi-grid method [77,78,23], which we found does not improve the performance.
 
-* About Data augmentation. see 4.1 of [1]
-  
+* About Data augmentation. see 4.1 of [1]  
+
         Data augmentation: We apply data augmentation by randomly scaling the input images (from 0.5 to 2.0) and randomly left-right flipping during training.
 
 ## Reference
