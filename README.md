@@ -112,7 +112,8 @@ See chapter 4 of [2]
 
 #### Visualize training (Optional)
 
-Start visdom sever for visualization.
+Start visdom sever for visualization. Please remove '--enable_vis' if visualization is not needed. 
+
 ```bash
 # Run visdom server on port 8097
 visdom -port 8097
