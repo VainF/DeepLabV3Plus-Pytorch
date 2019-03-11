@@ -1,6 +1,6 @@
 # DeepLabv3-plus.pytorch
 
-Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
+A Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
 
 ## Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
