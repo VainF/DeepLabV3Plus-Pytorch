@@ -132,7 +132,7 @@ python train.py --backbone resnet101 --dataset voc --year 2012 --data_root ./dat
 
 ### 4. Test
 
-Results and images will be saved at save_path.
+Results and images will be saved at ./results.
 
 ```bash
 python test.py --backbone resnet101 --dataset voc --year 2012 --data_root ./datasets/data --batch_size 8 --use_separable_conv --crop_val --ckpt checkpoints/best_resnet101_voc.pkl --save_path ./results
