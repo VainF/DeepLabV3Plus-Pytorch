@@ -37,7 +37,7 @@ def get_argparser():
     
     # Model Options
     parser.add_argument("--bn_mom", type=float, default=3e-4,
-                        help='momentum for batchnorm of backbone  (default: 3e-4)')
+                        help='momentum for batchnorm (default: 3e-4)')
     parser.add_argument("--output_stride", type=int, default=16,
                         help="output stride for deeplabv3+")
     parser.add_argument("--use_separable_conv", action='store_true', default=False,
@@ -69,7 +69,7 @@ def get_argparser():
     parser.add_argument("--gpu_id", type=str, default='0', 
                         help="GPU ID")
     parser.add_argument("--no_nesterov", action='store_true', default=False,
-                        help="Enable nesterov (default: False)")
+                        help="disenable nesterov (default: False)")
     parser.add_argument("--momentum", type=float, default=0.9,
                         help='momentum for SGD (default: 0.9)')
     parser.add_argument("--weight_decay", type=float, default=1e-4,
@@ -107,7 +107,7 @@ def get_argparser():
     parser.add_argument("--vis_env", type=str, default='main',
                         help='env for visdom')
     parser.add_argument("--vis_sample_num", type=int, default=8,
-                        help='number of samples for visualization (default: 6)')
+                        help='number of samples for visualization (default: 8)')
     return parser
 
 
