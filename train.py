@@ -42,6 +42,8 @@ def get_argparser():
                         help="output stride for deeplabv3+")
     parser.add_argument("--use_separable_conv", action='store_true', default=False,
                         help="Use separable conv in ASPP and Decoder")
+    parser.add_argument("--use_gn", action='store_true', default=False,
+                        help='use group normalization')
 
     # Train Options
     parser.add_argument("--epochs", type=int, default=30,
@@ -108,6 +110,8 @@ def get_argparser():
                         help='env for visdom')
     parser.add_argument("--vis_sample_num", type=int, default=8,
                         help='number of samples for visualization (default: 8)')
+
+    
     return parser
 
 
@@ -250,6 +254,10 @@ def main():
     # Set up model
     print("Backbone: %s"%opts.backbone)
     model = DeepLabv3(num_classes=opts.num_classes, backbone=opts.backbone, pretrained=True, momentum=opts.bn_mom, output_stride=opts.output_stride, use_separable_conv=opts.use_separable_conv)
+    if opts.use_gn==True:
+        print("[!] Replace BatchNorm with GroupNorm!")
+        model = utils.convert_bn2gn(model)
+
     if opts.fix_bn==True:
         model.fix_bn()
 

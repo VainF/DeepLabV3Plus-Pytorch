@@ -47,7 +47,9 @@ def get_argparser():
                         help="output stride for deeplabv3+")
     parser.add_argument("--use_separable_conv", action='store_true', default=False,
                         help="Use separable conv in ASPP and Decoder")
-
+    parser.add_argument("--use_gn", action='store_true', default=False,
+                        help='use group normalization')
+                        
     # Train Options
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='do crop for validation (default: False)')
@@ -152,6 +154,10 @@ def main():
     # Set up model
     print("Backbone: %s"%opts.backbone)
     model = DeepLabv3(num_classes=opts.num_classes, backbone=opts.backbone, pretrained=True, momentum=opts.bn_mom, output_stride=opts.output_stride, use_separable_conv=opts.use_separable_conv)
+    if opts.use_gn==True:
+        print("[!] Replace BatchNorm with GroupNorm!")
+        model = utils.convert_bn2gn(model)
+
     if torch.cuda.device_count()>1: # Parallel
         print("%d GPU parallel"%(torch.cuda.device_count()))
         model = torch.nn.DataParallel(model)

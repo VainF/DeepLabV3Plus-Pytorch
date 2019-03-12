@@ -76,7 +76,9 @@ def mkdir(path):
 def convert_bn2gn(module):
     mod = module
     if isinstance(module, nn.modules.batchnorm._BatchNorm):
-        mod = nn.GroupNorm(num_groups=32, num_channels=module.num_features)
+        num_features = module.num_features
+        num_groups = num_features//16
+        mod = nn.GroupNorm(num_groups=num_groups, num_channels=num_features)
     for name, child in module.named_children():
         mod.add_module(name, convert_bn2gn(child))
     del module

@@ -67,6 +67,7 @@ The model are trained with **small batch size (8) and fixed batchnorm** due to G
 * scikit-learn
 * tqdm
 * matplotlib
+* visdom
 
 ### 2. Prepare Datasets
 
