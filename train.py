@@ -164,8 +164,8 @@ def get_dataset(opts):
                           std=[0.229, 0.224, 0.225] ),
         ] )
 
-        train_dst = Cityscapes(root=opts.data_root, split='train', download=opts.download, transform=train_transform)
-        val_dst = Cityscapes(root=opts.data_root, split='val', download=False, transform=val_transform)
+        train_dst = Cityscapes(root=opts.data_root, split='train', transform=train_transform)
+        val_dst = Cityscapes(root=opts.data_root, split='val', transform=val_transform)
     return train_dst, val_dst
 
 
@@ -179,7 +179,7 @@ def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=N
             scheduler.step()
         images = images.to(device, dtype=torch.float32)
         labels = labels.to(device, dtype=torch.long)
-
+        print( np.unique(labels.cpu().numpy()) )
         # N, C, H, W
         optim.zero_grad()
         outputs = model(images)
