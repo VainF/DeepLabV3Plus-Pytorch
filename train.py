@@ -179,7 +179,7 @@ def train( cur_epoch, criterion, model, optim, train_loader, device, scheduler=N
             scheduler.step()
         images = images.to(device, dtype=torch.float32)
         labels = labels.to(device, dtype=torch.long)
-        print( np.unique(labels.cpu().numpy()) )
+        # print( np.unique(labels.cpu().numpy()) )
         # N, C, H, W
         optim.zero_grad()
         outputs = model(images)
