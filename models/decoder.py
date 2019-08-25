@@ -16,11 +16,11 @@ class Decoder(nn.Module):
         self.last_conv = nn.Sequential( Conv(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
                                         nn.BatchNorm2d(256, momentum=momentum),
                                         nn.ReLU(inplace=True),
-                                        nn.Dropout(0.3),
+                                        #nn.Dropout(0.3),
                                         Conv(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
                                         nn.BatchNorm2d(256, momentum=momentum),
                                         nn.ReLU(inplace=True),
-                                        nn.Dropout(0.3),
+                                        #nn.Dropout(0.3),
                                         nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
         self._init_weight()
     
