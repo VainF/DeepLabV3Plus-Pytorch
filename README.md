@@ -1,6 +1,7 @@
 # DeepLabv3-plus.pytorch
 
-A Pytorch implementation of [DeepLabv3+](https://arxiv.org/abs/1802.02611).
+A Pytorch implementation of paper [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611) (Deeplabv3+).
+
 
 ## Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
