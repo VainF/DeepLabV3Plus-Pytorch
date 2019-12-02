@@ -41,9 +41,9 @@ class StreamSegMetrics(_StreamMetrics):
             if k!="Class IoU":
                 string += "%s: %f\n"%(k, v)
         
-        string+='Class IoU:\n'
-        for k, v in results['Class IoU'].items():
-            string += "\tclass %d: %f\n"%(k, v)
+        #string+='Class IoU:\n'
+        #for k, v in results['Class IoU'].items():
+        #    string += "\tclass %d: %f\n"%(k, v)
         return string
 
     def _fast_hist(self, label_true, label_pred):
@@ -81,7 +81,6 @@ class StreamSegMetrics(_StreamMetrics):
         
     def reset(self):
         self.confusion_matrix = np.zeros((self.n_classes, self.n_classes))
-
 
 class AverageMeter(object):
     """Computes average values"""

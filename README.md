@@ -1,90 +1,82 @@
 # DeepLabv3-plus.pytorch
 
-A Pytorch implementation of paper [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611) (Deeplabv3+).
+DeepLabV3 and DeepLabV3+ for Pytorch.
 
+Supported Backbone: ResNet101, ResNet50, MobileNetV2
 
 ## Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
 
 ## Results
 
-#### Metrics
+#### Results on PASCAL VOC2012 Aug (In Progress)
 
-**Mean IoU** and **Overall Accuracy** are calculated using confusion matrix. (please see metrics/stream_metrics.py for more details).
-
-#### Crop Evaluation
-
-The model are trained with **small batch size (8) and fixed batchnorm** due to GPU memory limitations. It required 8GB to train deeplab on one Quadro P5000. Please try to use larger batch size and finetune batchnorm if you want better performance.
-
-| Backbone          | OS (Train/Val)     | Overall Acc   | Mean IoU        |  Fix BN   | Separable Conv  |  
-| :--------:        | :-------------:    | :-----------: | :--------:      |  :-----:  | :--------:      |
-| ResNet101         | 16/16              |  94.03%       |  76.88%         |    Yes    |     No          |
-| ResNet101         | 16/16              |  94.01%       |  76.74%         |    Yes    |     Yes         |
-| ResNet101 (Paper) | 16/16              |    -          |  78.85%         |    No     |     Yes         |
-
+| Model          | Batch Size    | Overall Acc   | Mean IoU        | Checkpoint  |
+| :--------:        | :-------------:    | :-----------: | :--------: | :--------: | 
+| DeepLabV3Plus-MobileNetV2   | 16            |  0.9246%       |  0.7157        |  - |
+| DeepLabV3-MobileNetV2       | -             |  -       |  -         |    - |
+| DeepLabV3Plus-ResNet101     | -             |    -     |  -         |    - |
+| DeepLabV3-ResNet101         | -             |    -     |  -         |    - |
 
 #### Vsualization of training
 
 ![trainvis](samples/visdom-screenshoot.png)
 
-#### Segmentation Results
+#### Segmentation Results (DeepLabv3Plus-MobileNet)
 
 <div>
-<img src="samples/0_image.png"   width="20%">
-<img src="samples/0_target.png"  width="20%">
-<img src="samples/0_pred.png"    width="20%">
-<img src="samples/0_overlay.png" width="20%">
+<img src="samples/60_image.png"   width="20%">
+<img src="samples/60_target.png"  width="20%">
+<img src="samples/60_pred.png"    width="20%">
+<img src="samples/60_overlay.png" width="20%">
 </div>
 
 <div>
-<img src="samples/8_image.png"   width="20%">
-<img src="samples/8_target.png"  width="20%">
-<img src="samples/8_pred.png"    width="20%">
-<img src="samples/8_overlay.png" width="20%">
+<img src="samples/166_image.png"   width="20%">
+<img src="samples/166_target.png"  width="20%">
+<img src="samples/166_pred.png"    width="20%">
+<img src="samples/166_overlay.png" width="20%">
 </div>
 
 <div>
-<img src="samples/20_image.png"   width="20%">
-<img src="samples/20_target.png"  width="20%">
-<img src="samples/20_pred.png"    width="20%">
-<img src="samples/20_overlay.png" width="20%">
+<img src="samples/293_image.png"   width="20%">
+<img src="samples/293_target.png"  width="20%">
+<img src="samples/293_pred.png"    width="20%">
+<img src="samples/293_overlay.png" width="20%">
 </div>
 
 <div>
-<img src="samples/582_image.png"   width="20%">
-<img src="samples/582_target.png"  width="20%">
-<img src="samples/582_pred.png"    width="20%">
-<img src="samples/582_overlay.png" width="20%">
+<img src="samples/294_image.png"   width="20%">
+<img src="samples/294_target.png"  width="20%">
+<img src="samples/294_pred.png"    width="20%">
+<img src="samples/294_overlay.png" width="20%">
 </div>
 
 
 ## Quick Start
 
 ### 1. Requirements
-* Pytorch
-* Torchvision
-* Numpy
-* Pillow
-* scikit-learn
-* tqdm
-* matplotlib
-* visdom
+
+```bash
+pip install -r requirements.txt
+```
 
 ### 2. Prepare Datasets
 
 #### pascal voc
-You can run train.py with "--download" option to download and extract pascal voc dataset. The defaut path is './datasets/data' which should be like this: 
+You can run train.py with "--download" option to download and extract pascal voc dataset. The defaut path is './datasets/data':
 
 ```
-/data
-    /VOCdevkit 
-        /VOC2012 
-            /SegmentationClass
-            /JPEGImages
+/datasets
+    /data
+        /VOCdevkit 
+            /VOC2012 
+                /SegmentationClass
+                /JPEGImages
+                ...
             ...
+        /VOCtrainval_11-May-2012.tar
         ...
-    /VOCtrainval_11-May-2012.tar
-    ...
 ```
 
 #### trainaug
@@ -98,16 +90,17 @@ See chapter 4 of [2]
 **Please extract trainaug files (SegmentationClassAug) to the VOC2012 directory.**
 
 ```
-/DATA_DIR
-    /VOCdevkit  
-        /VOC2012
-            /SegmentationClass
-            /SegmentationClassAug
-            /JPEGImages
+/datasets
+    /data
+        /VOCdevkit  
+            /VOC2012
+                /SegmentationClass
+                /SegmentationClassAug
+                /JPEGImages
+                ...
             ...
+        /VOCtrainval_11-May-2012.tar
         ...
-    /VOCtrainval_11-May-2012.tar
-    ...
 ```
 
 ### 3. Train
@@ -117,8 +110,8 @@ See chapter 4 of [2]
 Start visdom sever for visualization. Please remove '--enable_vis' if visualization is not needed. 
 
 ```bash
-# Run visdom server on port 8097
-visdom -port 8097
+# Run visdom server on port 28333
+visdom -port 28333
 ```
 
 #### Train on PASCAL VOC2012 Aug (Recommended)
@@ -126,7 +119,7 @@ visdom -port 8097
 Run train.py with *"--year 2012_aug"*
 
 ```bash
-python train.py --backbone resnet101 --dataset voc --year 2012_aug --data_root ./datasets/data  --lr 4e-4 --epochs 30  --batch_size 8 --use_separable_conv --fix_bn --crop_val --enable_vis --vis_env deeplab --vis_port 8097 
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16
 ```
 
 #### Train on Standard PASCAL VOC2012
@@ -134,7 +127,7 @@ python train.py --backbone resnet101 --dataset voc --year 2012_aug --data_root .
 Run train.py with *"--year 2012"*
 
 ```bash
-python train.py --backbone resnet101 --dataset voc --year 2012 --data_root ./datasets/data  --lr 4e-4 --epochs 30  --batch_size 8 --use_separable_conv --fix_bn --crop_val --enable_vis --vis_env deeplab --vis_port 8097 
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012 --crop_val --lr 0.01 --crop_size 513 --batch_size 16
 ```
 
 ### 4. Test
@@ -142,20 +135,8 @@ python train.py --backbone resnet101 --dataset voc --year 2012 --data_root ./dat
 Results and images will be saved at ./results.
 
 ```bash
-python test.py --backbone resnet101 --dataset voc --year 2012 --data_root ./datasets/data --batch_size 8 --use_separable_conv --crop_val --ckpt checkpoints/best_resnet101_voc.pkl --save_path ./results
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --test_only --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc.pkl --save_test_results
 ```
-
-## More Details
-
-* If GPU memory is limited, try to reduce crop size or batch size. Note that batchnorm needs large bacth size. As an alternative, you can try [group normalization (GN)](https://arxiv.org/abs/1803.08494).
-
-* Multi-Grid are **not introduced** in this repo according to the paper. see 4.3 of [2].
-
-        Note that we do not employ the multi-grid method [77,78,23], which we found does not improve the performance.
-
-* About Data augmentation. see 4.1 of [1]  
-
-        Data augmentation: We apply data augmentation by randomly scaling the input images (from 0.5 to 2.0) and randomly left-right flipping during training.
 
 ## Reference
 

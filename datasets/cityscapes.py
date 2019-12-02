@@ -19,7 +19,6 @@ class Cityscapes(data.Dataset):
         - **target_transform** (callable, optional): A function/transform that takes in the target and transforms it.
     
     Examples:
-
         Get semantic segmentation target
         .. code-block:: python
             dataset = Cityscapes('./data/cityscapes', split='train', mode='fine',
