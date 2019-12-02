@@ -29,20 +29,24 @@ def get_argparser():
     parser.add_argument("--num_classes", type=int, default=None, 
                         help="num classes (default: None)")
     
-    parser.add_argument("--save_val_results", action='store_true', default=False,
-                        help="save segmentation results to \"./results\"")
-
+    # Deeplab Options
+    parser.add_argument("--model", type=str, default='deeplabv3plus_mobilenet',
+                        choices=['deeplabv3_resnet50',  'deeplabv3plus_resnet50', 
+                                 'deeplabv3_resnet101', 'deeplabv3plus_resnet101', 
+                                 'deeplabv3_mobilenet', 'deeplabv3plus_mobilenet'], help='model name' )
+    
     # Train Options
     parser.add_argument("--test_only", action='store_true', default=False)
-
+    parser.add_argument("--save_val_results", action='store_true', default=False,
+                        help="save segmentation results to \"./results\"")
     parser.add_argument("--total_itrs", type=int, default=30e3,
-                        help="epoch number (default: 30)")
+                        help="epoch number (default: 30k)")
     parser.add_argument("--lr", type=float, default=0.01,
                         help="learning rate (default: 0.01)")
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='crop validation (default: False)')
     parser.add_argument("--batch_size", type=int, default=16,
-                        help='batch size (default: 12)')
+                        help='batch size (default: 16)')
     parser.add_argument("--crop_size", type=int, default=513)
 
     parser.add_argument("--ckpt", default=None, type=str,
@@ -59,7 +63,7 @@ def get_argparser():
     parser.add_argument("--print_interval", type=int, default=10,
                         help="print interval of loss (default: 10)")
     parser.add_argument("--val_interval", type=int, default=100,
-                        help="epoch interval for eval (default: 1)")
+                        help="epoch interval for eval (default: 100)")
 
     parser.add_argument("--download", action='store_true', default=False,
                         help="download datasets")
@@ -67,12 +71,6 @@ def get_argparser():
     # PASCAL VOC Options
     parser.add_argument("--year", type=str, default='2012',
                         choices=['2012_aug', '2012', '2011', '2009', '2008', '2007'], help='year of VOC' )
-    
-    # Deeplab Options
-    parser.add_argument("--model", type=str, default='deeplabv3plus_mobilenet',
-                        choices=['deeplabv3_resnet50',  'deeplabv3plus_resnet50', 
-                                 'deeplabv3_resnet101', 'deeplabv3plus_resnet101', 
-                                 'deeplabv3_mobilenet', 'deeplabv3plus_mobilenet'], help='model name' )
     
     # Visdom options
     parser.add_argument("--enable_vis", action='store_true', default=False,
