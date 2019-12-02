@@ -316,14 +316,14 @@ def main():
                 interval_loss=0.0
 
             if (cur_itrs)%opts.val_interval==0:
-                save_ckpt( 'checkpoints/latest_%s_%s.pkl'%(opts.model, opts.dataset) )
+                save_ckpt( 'checkpoints/latest_%s_%s.pth'%(opts.model, opts.dataset) )
                 print("validation...")
                 model.eval()
                 val_score, ret_samples = validate(opts=opts, model=model, loader=val_loader, device=device, metrics=metrics, ret_samples_ids=vis_sample_id)
                 print(metrics.to_str(val_score))
                 if val_score['Mean IoU']>best_score: # save best model
                     best_score = val_score['Mean IoU']
-                    save_ckpt( 'checkpoints/best_%s_%s.pkl'%(opts.model, opts.dataset) )
+                    save_ckpt( 'checkpoints/best_%s_%s.pth'%(opts.model, opts.dataset) )
                 
                 if vis is not None: # visualize validation score and samples
                     vis.vis_scalar("[Val] Overall Acc", cur_itrs, val_score['Overall Acc'] )

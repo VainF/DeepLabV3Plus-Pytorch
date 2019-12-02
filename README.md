@@ -11,46 +11,41 @@ Supported Backbones: ResNet101, ResNet50, MobileNetV2
 
 #### Results on PASCAL VOC2012 Aug (In Progress)
 
-|  Model          | Batch Size    | Overall Acc   | Mean IoU        | Checkpoint  |
-| :--------        | :-------------:    | :-----------: | :--------: | :--------: | 
-| DeepLabV3Plus-MobileNetV2   | 16            |  0.9246%       |  0.7157        |  - |
-| DeepLabV3Plus-ResNet101     | -             |    -     |  -         |    - |
-| DeepLabV3-MobileNetV2       | -             |  -       |  -         |    - |
-| DeepLabV3-ResNet101         | -             |    -     |  -         |    - |
+|  Model          | Batch Size  | FLOPs  | Overall Acc   | Mean IoU        | Checkpoint  |
+| :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
+| DeepLabV3Plus-MobileNetV2   | 16     |  3.103G      |  0.9259       |  0.7183        |  [Download](https://www.dropbox.com/s/7rox8qvfncz9m2i/best_deeplabv3plus_mobilenet_voc.pth?dl=0) |
+| DeepLabV3-MobileNetV2       | -      |  2.187G      |  -       |  -         |    - |
+| DeepLabV3Plus-ResNet101     | -      |  25.91G      |    -     |  -         |    - |
+| DeepLabV3-ResNet101         | -      |  24.97G      |    -     |  -         |    - |
 
-#### Vsualization of training
-
-![trainvis](samples/visdom-screenshoot.png)
 
 #### Segmentation Results (DeepLabv3Plus-MobileNet)
 
 <div>
-<img src="samples/60_image.png"   width="20%">
-<img src="samples/60_target.png"  width="20%">
-<img src="samples/60_pred.png"    width="20%">
-<img src="samples/60_overlay.png" width="20%">
+<img src="samples/120_image.png"   width="20%">
+<img src="samples/120_target.png"  width="20%">
+<img src="samples/120_pred.png"    width="20%">
+<img src="samples/120_overlay.png" width="20%">
 </div>
 
 <div>
-<img src="samples/166_image.png"   width="20%">
-<img src="samples/166_target.png"  width="20%">
-<img src="samples/166_pred.png"    width="20%">
-<img src="samples/166_overlay.png" width="20%">
+<img src="samples/417_image.png"   width="20%">
+<img src="samples/417_target.png"  width="20%">
+<img src="samples/417_pred.png"    width="20%">
+<img src="samples/417_overlay.png" width="20%">
 </div>
 
 <div>
-<img src="samples/293_image.png"   width="20%">
-<img src="samples/293_target.png"  width="20%">
-<img src="samples/293_pred.png"    width="20%">
-<img src="samples/293_overlay.png" width="20%">
+<img src="samples/474_image.png"   width="20%">
+<img src="samples/474_target.png"  width="20%">
+<img src="samples/474_pred.png"    width="20%">
+<img src="samples/474_overlay.png" width="20%">
 </div>
 
-<div>
-<img src="samples/294_image.png"   width="20%">
-<img src="samples/294_target.png"  width="20%">
-<img src="samples/294_pred.png"    width="20%">
-<img src="samples/294_overlay.png" width="20%">
-</div>
+
+#### Vsualization of training
+
+![trainvis](samples/visdom-screenshoot.png)
 
 
 ## Quick Start
