@@ -228,7 +228,7 @@ def main():
     }
 
     model = model_map[opts.model](num_classes=opts.num_classes)
-    utils.set_bn_momentum(model.backbone, momentum=0.0003) # 1 - 0.9997
+    utils.set_bn_momentum(model.backbone, momentum=0.01) # 1 - 0.9997
 
     # Set up metrics
     metrics = StreamSegMetrics(opts.num_classes)
