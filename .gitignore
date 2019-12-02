@@ -1,2 +1,6 @@
 __pycache__
 VOCdevkit
+checkpoints
+.vscode
+*.pyc
+__pycache__
