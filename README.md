@@ -112,7 +112,7 @@ visdom -port 28333
 #### Available Architecture
 specify the model architectture with '--model ARCH_NAME'  
 
-|     |          |
+| DeepLabV3    |  DeepLabV3+        |
 | :---| :---     |
 |deeplabv3_resnet50|deeplabv3plus_resnet50|
 |deeplabv3_resnet101|deeplabv3plus_resnet101|
