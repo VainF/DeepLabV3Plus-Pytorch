@@ -1,4 +1,4 @@
-# DeepLabv3-plus.pytorch
+# DeepLabv3Plus-Pytorch
 
 DeepLabV3 and DeepLabV3+ for Pytorch.
 
