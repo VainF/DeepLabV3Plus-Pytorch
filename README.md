@@ -2,7 +2,7 @@
 
 DeepLabV3 and DeepLabV3+ for Pytorch.
 
-#### Available Architecture
+#### Available Architectures
 specify the model architectture with '--model ARCH_NAME'  
 
 | DeepLabV3    |  DeepLabV3+        |
