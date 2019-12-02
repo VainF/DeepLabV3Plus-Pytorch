@@ -11,11 +11,11 @@ Supported Backbones: ResNet101, ResNet50, MobileNetV2
 
 #### Results on PASCAL VOC2012 Aug (In Progress)
 
-| Model          | Batch Size    | Overall Acc   | Mean IoU        | Checkpoint  |
-| :--------:        | :-------------:    | :-----------: | :--------: | :--------: | 
+|  Model          | Batch Size    | Overall Acc   | Mean IoU        | Checkpoint  |
+| :--------        | :-------------:    | :-----------: | :--------: | :--------: | 
 | DeepLabV3Plus-MobileNetV2   | 16            |  0.9246%       |  0.7157        |  - |
-| DeepLabV3-MobileNetV2       | -             |  -       |  -         |    - |
 | DeepLabV3Plus-ResNet101     | -             |    -     |  -         |    - |
+| DeepLabV3-MobileNetV2       | -             |  -       |  -         |    - |
 | DeepLabV3-ResNet101         | -             |    -     |  -         |    - |
 
 #### Vsualization of training
