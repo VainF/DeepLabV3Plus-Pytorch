@@ -2,7 +2,14 @@
 
 DeepLabV3 and DeepLabV3+ for Pytorch.
 
-Supported Backbones: ResNet101, ResNet50, MobileNetV2
+#### Available Architecture
+specify the model architectture with '--model ARCH_NAME'  
+
+| DeepLabV3    |  DeepLabV3+        |
+| :---: | :---:     |
+|deeplabv3_resnet50|deeplabv3plus_resnet50|
+|deeplabv3_resnet101|deeplabv3plus_resnet101|
+|deeplabv3_mobilenet|deeplabv3plus_mobilenet |
 
 ## Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
@@ -108,15 +115,6 @@ Start visdom sever for visualization. Please remove '--enable_vis' if visualizat
 # Run visdom server on port 28333
 visdom -port 28333
 ```
-
-#### Available Architecture
-specify the model architectture with '--model ARCH_NAME'  
-
-| DeepLabV3    |  DeepLabV3+        |
-| :---| :---     |
-|deeplabv3_resnet50|deeplabv3plus_resnet50|
-|deeplabv3_resnet101|deeplabv3plus_resnet101|
-|deeplabv3_mobilenet|deeplabv3plus_mobilenet |
 
 #### Train on PASCAL VOC2012 Aug (Recommended)
 
