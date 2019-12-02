@@ -2,7 +2,7 @@
 
 DeepLabV3 and DeepLabV3+ for Pytorch.
 
-Supported Backbone: ResNet101, ResNet50, MobileNetV2
+Supported Backbones: ResNet101, ResNet50, MobileNetV2
 
 ## Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
