@@ -227,6 +227,7 @@ def main():
 
     model = model_map[opts.model](num_classes=opts.num_classes)
     utils.set_bn_momentum(model.backbone, momentum=0.01)
+    model = model.to(device)
 
     # Set up metrics
     metrics = StreamSegMetrics(opts.num_classes)
@@ -237,7 +238,27 @@ def main():
         {'params': model.classifier.parameters(), 'lr': opts.lr},
     ], lr=opts.lr, momentum=0.9, weight_decay=opts.weight_decay)
     scheduler = utils.PolyLR(optimizer, opts.total_itrs, power=0.9) #torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.lr_decay_step, gamma=opts.lr_decay_factor)
-    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.1)
+    
+    # Set up criterion
+    #criterion = utils.get_loss(opts.loss_type)
+    if opts.loss_type=='focal_loss':
+        criterion= utils.FocalLoss(ignore_index=255, size_average=True)
+    elif opts.loss_type=='cross_entropy':
+        criterion = nn.CrossEntropyLoss(ignore_index=255, reduction='mean')
+
+    def save_ckpt(path):
+        """ save current model
+        """
+        state = {
+                    "cur_itrs": cur_itrs,
+                    "model_state": model.state_dict(),
+                    "optimizer_state": optimizer.state_dict(),
+                    "scheduler_state": scheduler.state_dict(),
+                    "best_score": best_score,
+        }
+        torch.save(state, path)
+        print( "Model saved as %s"%path )
+
 
     utils.mkdir('checkpoints')
     # Restore
@@ -255,28 +276,6 @@ def main():
         del checkpoint # free memory
     else:
         print("[!] Retrain")
-    
-    def save_ckpt(path):
-        """ save current model
-        """
-        state = {
-                    "cur_itrs": cur_itrs,
-                    "model_state": model.state_dict(),
-                    "optimizer_state": optimizer.state_dict(),
-                    "scheduler_state": scheduler.state_dict(),
-                    "best_score": best_score,
-        }
-        torch.save(state, path)
-        print( "Model saved as %s"%path )
-
-    model = model.to(device)
-    
-    # Set up criterion
-    #criterion = utils.get_loss(opts.loss_type)
-    if opts.loss_type=='focal_loss':
-        criterion= utils.FocalLoss(ignore_index=255, size_average=True)
-    elif opts.loss_type=='cross_entropy':
-        criterion = nn.CrossEntropyLoss(ignore_index=255, reduction='mean')
 
     #==========   Train Loop   ==========#
     vis_sample_id = np.random.randint(0, len(val_loader), opts.vis_num_samples, np.int32) if opts.enable_vis else None # sample idxs for visualization

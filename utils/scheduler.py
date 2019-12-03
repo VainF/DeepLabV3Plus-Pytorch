@@ -7,5 +7,5 @@ class PolyLR(_LRScheduler):
         super(PolyLR, self).__init__(optimizer, last_epoch)
     
     def get_lr(self):
-        return [ base_lr * ( 1 - self.last_epoch/self.max_iters )**self.power
+        return [ base_lr * ( 1 - self.last_epoch/(self.max_iters+1) )**self.power
                 for base_lr in self.base_lrs]
