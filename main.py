@@ -52,7 +52,7 @@ def get_argparser():
     parser.add_argument("--crop_size", type=int, default=513)
 
     parser.add_argument("--ckpt", default=None, type=str,
-                        help="path to trained model. Leave it None if you want to retrain your model")
+                        help="restore from checkpoint")
     parser.add_argument("--loss_type", type=str, default='cross_entropy',
                         choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
     parser.add_argument("--gpu_id", type=str, default='0',
