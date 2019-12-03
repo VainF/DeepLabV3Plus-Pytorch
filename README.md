@@ -118,7 +118,7 @@ visdom -port 28333
 
 #### Train on PASCAL VOC2012 Aug (Recommended)
 
-Run train.py with *"--year 2012_aug"*
+Run main.py with *"--year 2012_aug"*
 
 ```bash
 python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16
@@ -126,7 +126,7 @@ python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --g
 
 #### Train on Standard PASCAL VOC2012
 
-Run train.py with *"--year 2012"*
+Run main.py with *"--year 2012"*
 
 ```bash
 python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012 --crop_val --lr 0.01 --crop_size 513 --batch_size 16
@@ -134,7 +134,7 @@ python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --g
 
 ### 4. Test
 
-Results and images will be saved at ./results.
+Results will be saved at ./results.
 
 ```bash
 python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --test_only --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc.pth --save_test_results
