@@ -21,9 +21,9 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 
 #### Results on PASCAL VOC2012 Aug (In Progress)
 
-|  Model          | Batch Size  | FLOPs  | Overall Acc   | Mean IoU        | Checkpoint  |
+|  Model          | Batch Size  | FLOPs  | OS8 mIoU   | OS16 mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
-| DeepLabV3Plus-MobileNetV2   | 16     |  3.103G      |  0.9259       |  0.7183        |  [Download](https://www.dropbox.com/s/7rox8qvfncz9m2i/best_deeplabv3plus_mobilenet_voc.pth?dl=0) |
+| DeepLabV3Plus-MobileNetV2   | 16     |  3.103G      |  0.7183       |  0.7124        |  [Download](https://www.dropbox.com/s/7rox8qvfncz9m2i/best_deeplabv3plus_mobilenet_voc.pth?dl=0)  |
 | DeepLabV3-MobileNetV2       | -      |  2.187G      |  -       |  -         |    - |
 | DeepLabV3Plus-ResNet101     | -      |  25.91G      |    -     |  -         |    - |
 | DeepLabV3-ResNet101         | -      |  24.97G      |    -     |  -         |    - |
@@ -84,13 +84,13 @@ You can run train.py with "--download" option to download and extract pascal voc
         ...
 ```
 
-#### trainaug
+#### trainaug (Recommended)
 
 See chapter 4 of [2]
 
         The original dataset contains 1464 (train), 1449 (val), and 1456 (test) pixel-level annotated images. We augment the dataset by the extra annotations provided by [76], resulting in 10582 (trainaug) training images. The performance is measured in terms of pixel intersection-over-union averaged across the 21 classes (mIOU).
 
-*./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to download extra annatations from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). Those annotations come from [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet).
+*./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to download additional labels from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). Those labels come from [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet).
 
 **Please extract trainaug files (SegmentationClassAug) to the VOC2012 directory.**
 
@@ -119,20 +119,12 @@ Start visdom sever for visualization. Please remove '--enable_vis' if visualizat
 visdom -port 28333
 ```
 
-#### Train on PASCAL VOC2012 Aug (Recommended)
+#### Train
 
-Run main.py with *"--year 2012_aug"*
-
-```bash
-python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16
-```
-
-#### Train on Standard PASCAL VOC2012
-
-Run main.py with *"--year 2012"*
+Run main.py with *"--year 2012_aug"* to train your model on PASCAL VOC2012 Aug.
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012 --crop_val --lr 0.01 --crop_size 513 --batch_size 16
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 8
 ```
 
 ### 4. Test
@@ -140,7 +132,7 @@ python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --g
 Results will be saved at ./results.
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --test_only --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc.pth --save_test_results
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --output_stride 8 --test_only --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc.pth --save_test_results
 ```
 
 ## Reference

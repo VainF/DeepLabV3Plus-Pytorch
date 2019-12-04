@@ -9,13 +9,13 @@ model_urls = {
     'deeplabv3_resnet101_coco': None,
 }
 
-def _segm_resnet(name, backbone_name, num_classes, output_stride=8, pretrained_backbone=True):
+def _segm_resnet(name, backbone_name, num_classes, output_stride, pretrained_backbone=True):
 
     if output_stride==8:
         replace_stride_with_dilation=[False, True, True]
         aspp_dilate = [12, 24, 36]
     else:
-        replace_stride_with_dilation=[True, True, True]
+        replace_stride_with_dilation=[False, False, True]
         aspp_dilate = [6, 12, 18]
 
     backbone = resnet.__dict__[backbone_name](
@@ -36,7 +36,7 @@ def _segm_resnet(name, backbone_name, num_classes, output_stride=8, pretrained_b
     model = DeepLabV3(backbone, classifier)
     return model
 
-def _segm_mobilenet(name, backbone_name, num_classes, output_stride=8, pretrained_backbone=True):
+def _segm_mobilenet(name, backbone_name, num_classes, output_stride, pretrained_backbone=True):
     if output_stride==8:
         aspp_dilate = [12, 24, 36]
     else:
@@ -63,7 +63,7 @@ def _segm_mobilenet(name, backbone_name, num_classes, output_stride=8, pretraine
     model = DeepLabV3(backbone, classifier)
     return model
 
-def _load_model(arch_type, backbone, pretrained, progress, num_classes, output_stride):
+def _load_model(arch_type, backbone, pretrained, progress, num_classes, output_stride=8):
 
     if backbone=='mobilenetv2':
         model = _segm_mobilenet(arch_type, backbone, num_classes, output_stride=output_stride)

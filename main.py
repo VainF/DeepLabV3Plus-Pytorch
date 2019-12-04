@@ -41,7 +41,6 @@ def get_argparser():
     parser.add_argument("--output_stride", type=int, default=8)
 
 
-
     # Train Options
     parser.add_argument("--test_only", action='store_true', default=False)
     parser.add_argument("--save_val_results", action='store_true', default=False,
@@ -62,7 +61,7 @@ def get_argparser():
                         choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
     parser.add_argument("--gpu_id", type=str, default='0',
                         help="GPU ID")
-    parser.add_argument("--weight_decay", type=float, default=1e-4,
+    parser.add_argument("--weight_decay", type=float, default=4e-5,
                         help='weight decay (default: 1e-4)')
     parser.add_argument("--random_seed", type=int, default=23333,
                         help="random seed (default: 23333)")
@@ -153,8 +152,8 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
     if opts.save_val_results:
         if not os.path.exists('results'):
             os.mkdir('results')
-        denorm = utils.Denormalize(
-            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406], 
+                                   std=[0.229, 0.224, 0.225])
         img_id = 0
 
     with torch.no_grad():
@@ -178,10 +177,8 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
                     target = targets[i]
                     pred = preds[i]
 
-                    image = (denorm(image) * 255).transpose(1,
-                                                            2, 0).astype(np.uint8)
-                    target = loader.dataset.decode_target(
-                        target).astype(np.uint8)
+                    image = (denorm(image) * 255).transpose(1, 2, 0).astype(np.uint8)
+                    target = loader.dataset.decode_target(target).astype(np.uint8)
                     pred = loader.dataset.decode_target(pred).astype(np.uint8)
 
                     Image.fromarray(image).save('results/%d_image.png' % img_id)
@@ -248,7 +245,7 @@ def main():
     model = model_map[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
     if opts.separable_conv and 'plus' in opts.model:
         network.convert_to_separable_conv(model.classifier)
-    #utils.set_bn_momentum(model.backbone, momentum=0.01)
+    utils.set_bn_momentum(model.backbone, momentum=0.01)
     model = model.to(device)
     #print(model)
     
