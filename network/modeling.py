@@ -63,12 +63,12 @@ def _segm_mobilenet(name, backbone_name, num_classes, output_stride=8, pretraine
     model = DeepLabV3(backbone, classifier)
     return model
 
-def _load_model(arch_type, backbone, pretrained, progress, num_classes):
+def _load_model(arch_type, backbone, pretrained, progress, num_classes, output_stride):
 
     if backbone=='mobilenetv2':
-        model = _segm_mobilenet(arch_type, backbone, num_classes)
+        model = _segm_mobilenet(arch_type, backbone, num_classes, output_stride=output_stride)
     elif backbone.startswith('resnet'):
-        model = _segm_resnet(arch_type, backbone, num_classes)
+        model = _segm_resnet(arch_type, backbone, num_classes, output_stride=output_stride)
     else:
         raise NotImplementedError
 

@@ -3,13 +3,16 @@
 DeepLabV3 and DeepLabV3+ for Pytorch.
 
 #### Available Architectures
-specify the model architecture with '--model ARCH_NAME'  
+specify the model architecture with '--model ARCH_NAME' and set the output stride with '--output_stride OUTPUT_STRIDE'.
 
 | DeepLabV3    |  DeepLabV3+        |
 | :---: | :---:     |
 |deeplabv3_resnet50|deeplabv3plus_resnet50|
 |deeplabv3_resnet101|deeplabv3plus_resnet101|
 |deeplabv3_mobilenet|deeplabv3plus_mobilenet |
+
+#### Atrous Separable Convolution
+Atrous Separable Convolution is supported in this repo. We provide a simple tool ``network.convert_to_separable_conv`` to convert ``nn.Conv2d`` to ``AtrousSeparableConvolution``. **Please run main.py with '--separable_conv' if it is required**. See 'main.py' and 'network/_deeplab.py' for more details. 
 
 ## Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)

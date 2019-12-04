@@ -36,6 +36,11 @@ def get_argparser():
                         choices=['deeplabv3_resnet50',  'deeplabv3plus_resnet50',
                                  'deeplabv3_resnet101', 'deeplabv3plus_resnet101',
                                  'deeplabv3_mobilenet', 'deeplabv3plus_mobilenet'], help='model name')
+    parser.add_argument("--separable_conv", action='store_true', default=False,
+                        help="apply separable conv to decoder and aspp")
+    parser.add_argument("--output_stride", type=int, default=8)
+
+
 
     # Train Options
     parser.add_argument("--test_only", action='store_true', default=False)
@@ -50,15 +55,14 @@ def get_argparser():
     parser.add_argument("--batch_size", type=int, default=16,
                         help='batch size (default: 16)')
     parser.add_argument("--crop_size", type=int, default=513)
-
+    
     parser.add_argument("--ckpt", default=None, type=str,
                         help="restore from checkpoint")
     parser.add_argument("--loss_type", type=str, default='cross_entropy',
                         choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
     parser.add_argument("--gpu_id", type=str, default='0',
                         help="GPU ID")
-
-    parser.add_argument("--weight_decay", type=float, default=4e-5,
+    parser.add_argument("--weight_decay", type=float, default=1e-4,
                         help='weight decay (default: 1e-4)')
     parser.add_argument("--random_seed", type=int, default=23333,
                         help="random seed (default: 23333)")
@@ -241,10 +245,13 @@ def main():
         'deeplabv3plus_mobilenet': network.deeplabv3plus_mobilenet
     }
 
-    model = model_map[opts.model](num_classes=opts.num_classes)
-    utils.set_bn_momentum(model.backbone, momentum=0.01)
+    model = model_map[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
+    if opts.separable_conv and 'plus' in opts.model:
+        network.convert_to_separable_conv(model.classifier)
+    #utils.set_bn_momentum(model.backbone, momentum=0.01)
     model = model.to(device)
-
+    #print(model)
+    
     # Set up metrics
     metrics = StreamSegMetrics(opts.num_classes)
 

@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torch.nn.functional as F
-
 from collections import OrderedDict
 
 class _SimpleSegmentationModel(nn.Module):
@@ -75,3 +74,16 @@ class IntermediateLayerGetter(nn.ModuleDict):
                 out_name = self.return_layers[name]
                 out[out_name] = x
         return out
+
+def convert_to_separable_conv(module):
+    new_module = module
+    if isinstance(module, nn.Conv2d) and m.kernel_size>1:
+        new_module = AtrousSeparableConvolution(module.in_channels,
+                                      module.output_channels, module.kernel_size,
+                                      module.stride,
+                                      module.padding,
+                                      module.dilation,
+                                      module.bias)
+    for name, child in module.named_children():
+        new_module.add_module(name, convert_to_separable_conv(child))
+    return new_module
