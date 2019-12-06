@@ -124,7 +124,7 @@ visdom -port 28333
 Run main.py with *"--year 2012_aug"* to train your model on PASCAL VOC2012 Aug.
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 16
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.007 --crop_size 513 --batch_size 16 --output_stride 16
 ```
 
 #### Continue training
