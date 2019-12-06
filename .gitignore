@@ -5,3 +5,4 @@ checkpoints
 *.pyc
 __pycache__
 results
+checkpoints_bak
