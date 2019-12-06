@@ -38,7 +38,7 @@ def get_argparser():
                                  'deeplabv3_mobilenet', 'deeplabv3plus_mobilenet'], help='model name')
     parser.add_argument("--separable_conv", action='store_true', default=False,
                         help="apply separable conv to decoder and aspp")
-    parser.add_argument("--output_stride", type=int, default=8)
+    parser.add_argument("--output_stride", type=int, default=16)
 
 
     # Train Options
@@ -57,6 +57,8 @@ def get_argparser():
     
     parser.add_argument("--ckpt", default=None, type=str,
                         help="restore from checkpoint")
+    parser.add_argument("--continue_training", action='store_true', default=False)
+
     parser.add_argument("--loss_type", type=str, default='cross_entropy',
                         choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
     parser.add_argument("--gpu_id", type=str, default='0',
@@ -94,7 +96,7 @@ def get_dataset(opts):
     """
     if opts.dataset == 'voc':
         train_transform = et.ExtCompose([
-            et.ExtResize(size=opts.crop_size),
+            #et.ExtResize(size=opts.crop_size),
             et.ExtRandomScale((0.5, 2.0)),
             et.ExtRandomCrop(size=(opts.crop_size, opts.crop_size), pad_if_needed=True),
             et.ExtRandomHorizontalFlip(),
@@ -245,7 +247,7 @@ def main():
     model = model_map[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
     if opts.separable_conv and 'plus' in opts.model:
         network.convert_to_separable_conv(model.classifier)
-    utils.set_bn_momentum(model.backbone, momentum=0.01)
+    utils.set_bn_momentum(model.backbone, momentum=0.0003)
     model = model.to(device)
     #print(model)
     
@@ -256,7 +258,7 @@ def main():
     optimizer = torch.optim.SGD(params=[
         {'params': model.backbone.parameters(), 'lr': 0.1*opts.lr},
         {'params': model.classifier.parameters(), 'lr': opts.lr},
-    ], lr=opts.lr, momentum=0.9, weight_decay=opts.weight_decay)
+    ], lr=opts.lr, momentum=0.9, weight_decay=opts.weight_decay, nesterov=True)
     # torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.lr_decay_step, gamma=opts.lr_decay_factor)
     scheduler = utils.PolyLR(optimizer, opts.total_itrs, power=0.9)
 
@@ -288,10 +290,12 @@ def main():
     if opts.ckpt is not None and os.path.isfile(opts.ckpt):
         checkpoint = torch.load(opts.ckpt)
         model.load_state_dict(checkpoint["model_state"])
-        optimizer.load_state_dict(checkpoint["optimizer_state"])
-        scheduler.load_state_dict(checkpoint["scheduler_state"])
-        cur_itrs = checkpoint["cur_itrs"]
-        best_score = checkpoint['best_score']
+        if opts.continue_training:
+            optimizer.load_state_dict(checkpoint["optimizer_state"])
+            scheduler.load_state_dict(checkpoint["scheduler_state"])
+            cur_itrs = checkpoint["cur_itrs"]
+            best_score = checkpoint['best_score']
+            print("Training state restored from %s" % opts.ckpt)
         print("Model restored from %s" % opts.ckpt)
         del checkpoint  # free memory
     else:
@@ -339,8 +343,8 @@ def main():
                 interval_loss = 0.0
 
             if (cur_itrs) % opts.val_interval == 0:
-                save_ckpt('checkpoints/latest_%s_%s.pth' %
-                          (opts.model, opts.dataset))
+                save_ckpt('checkpoints/latest_%s_%s_os%d.pth' %
+                          (opts.model, opts.dataset,opts.output_stride))
                 print("validation...")
                 model.eval()
                 val_score, ret_samples = validate(
@@ -348,8 +352,8 @@ def main():
                 print(metrics.to_str(val_score))
                 if val_score['Mean IoU'] > best_score:  # save best model
                     best_score = val_score['Mean IoU']
-                    save_ckpt('checkpoints/best_%s_%s.pth' %
-                              (opts.model, opts.dataset))
+                    save_ckpt('checkpoints/best_%s_%s_os%d.pth' %
+                              (opts.model, opts.dataset,opts.output_stride))
 
                 if vis is not None:  # visualize validation score and samples
                     vis.vis_scalar("[Val] Overall Acc",

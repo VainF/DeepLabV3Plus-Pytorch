@@ -21,12 +21,12 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 
 #### Results on PASCAL VOC2012 Aug (In Progress)
 
-|  Model          | Batch Size  | FLOPs  | OS8 mIoU   | OS16 mIoU        | Checkpoint  |
+|  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
-| DeepLabV3Plus-MobileNetV2   | 16     |  3.103G      |  0.7183       |  0.7124        |  [Download](https://www.dropbox.com/s/7rox8qvfncz9m2i/best_deeplabv3plus_mobilenet_voc.pth?dl=0)  |
-| DeepLabV3-MobileNetV2       | -      |  2.187G      |  -       |  -         |    - |
-| DeepLabV3Plus-ResNet101     | -      |  25.91G      |    -     |  -         |    - |
-| DeepLabV3-ResNet101         | -      |  24.97G      |    -     |  -         |    - |
+| DeepLabV3Plus-MobileNetV2   | 16     |  3.103G      |  16/16   |  0.7365    |    -   |
+| DeepLabV3-MobileNetV2       | -      |  2.187G      |  -       |  -         |    -   |
+| DeepLabV3Plus-ResNet101     | -      |  25.91G      |  16/16   |  -         |    -   |
+| DeepLabV3-ResNet101         | -      |  24.97G      |    -     |  -         |    -   |
 
 
 #### Segmentation Results (DeepLabv3Plus-MobileNet)
@@ -119,12 +119,20 @@ Start visdom sever for visualization. Please remove '--enable_vis' if visualizat
 visdom -port 28333
 ```
 
-#### Train
+#### Train with OS=16
 
 Run main.py with *"--year 2012_aug"* to train your model on PASCAL VOC2012 Aug.
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 8
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 16
+```
+
+#### Continue training
+
+Run main.py with '--continue_training' to restore the state_dict of optimizer and scheduler from YOUR_CKPT.
+
+```bash
+python main.py ... --model YOUR_CKPT --continue_training
 ```
 
 ### 4. Test
@@ -132,7 +140,7 @@ python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --g
 Results will be saved at ./results.
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --output_stride 8 --test_only --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc.pth --save_test_results
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --output_stride 16 --test_only --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc_os8.pth --save_test_results
 ```
 
 ## Reference
