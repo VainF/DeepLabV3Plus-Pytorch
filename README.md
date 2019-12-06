@@ -132,7 +132,7 @@ python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --g
 Run main.py with '--continue_training' to restore the state_dict of optimizer and scheduler from YOUR_CKPT.
 
 ```bash
-python main.py ... --model YOUR_CKPT --continue_training
+python main.py ... --ckpt YOUR_CKPT --continue_training
 ```
 
 ### 4. Test
