@@ -63,10 +63,10 @@ def get_argparser():
                         choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
     parser.add_argument("--gpu_id", type=str, default='0',
                         help="GPU ID")
-    parser.add_argument("--weight_decay", type=float, default=4e-5,
+    parser.add_argument("--weight_decay", type=float, default=1e-4,
                         help='weight decay (default: 1e-4)')
-    parser.add_argument("--random_seed", type=int, default=23333,
-                        help="random seed (default: 23333)")
+    parser.add_argument("--random_seed", type=int, default=1,
+                        help="random seed (default: 1)")
     parser.add_argument("--print_interval", type=int, default=10,
                         help="print interval of loss (default: 10)")
     parser.add_argument("--val_interval", type=int, default=100,
@@ -221,16 +221,15 @@ def main():
 
     # Setup random seed
     torch.manual_seed(opts.random_seed)
-    torch.cuda.manual_seed(opts.random_seed)
     np.random.seed(opts.random_seed)
     random.seed(opts.random_seed)
 
     # Setup dataloader
     train_dst, val_dst = get_dataset(opts)
     train_loader = data.DataLoader(
-        train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=4)
+        train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=2)
     val_loader = data.DataLoader(
-        val_dst, batch_size=opts.batch_size if opts.crop_val else 1, shuffle=True, num_workers=4)
+        val_dst, batch_size=opts.batch_size if opts.crop_val else 1, shuffle=True, num_workers=2)
     print("Dataset: %s, Train set: %d, Val set: %d" %
           (opts.dataset, len(train_dst), len(val_dst)))
 
@@ -247,7 +246,7 @@ def main():
     model = model_map[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
     if opts.separable_conv and 'plus' in opts.model:
         network.convert_to_separable_conv(model.classifier)
-    utils.set_bn_momentum(model.backbone, momentum=0.0003)
+    utils.set_bn_momentum(model.backbone, momentum=0.01)
     model = model.to(device)
     #print(model)
     
@@ -258,7 +257,8 @@ def main():
     optimizer = torch.optim.SGD(params=[
         {'params': model.backbone.parameters(), 'lr': 0.1*opts.lr},
         {'params': model.classifier.parameters(), 'lr': opts.lr},
-    ], lr=opts.lr, momentum=0.9, weight_decay=opts.weight_decay, nesterov=True)
+    ], lr=opts.lr, momentum=0.9, weight_decay=opts.weight_decay)
+    #optimizer = torch.optim.SGD(params=model.parameters(), lr=opts.lr, momentum=0.9, weight_decay=opts.weight_decay)
     # torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.lr_decay_step, gamma=opts.lr_decay_factor)
     scheduler = utils.PolyLR(optimizer, opts.total_itrs, power=0.9)
 
@@ -321,6 +321,7 @@ def main():
         cur_epochs += 1
         for (images, labels) in train_loader:
             cur_itrs += 1
+            scheduler.step()
 
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
@@ -373,9 +374,6 @@ def main():
                             (img, target, lbl), axis=2)  # concat along width
                         vis.vis_image('Sample %d' % k, concat_img)
                 model.train()
-            if scheduler is not None:
-                scheduler.step()
-
-
+                
 if __name__ == '__main__':
     main()

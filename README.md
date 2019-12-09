@@ -23,7 +23,7 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 
 |  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
-| DeepLabV3Plus-MobileNetV2   | 16     |  3.103G      |  16/16   |  -    |    -   |
+| DeepLabV3Plus-MobileNetV2   | 16     |  3.103G      |  16/16   |  0.711     |    [Dropbox](https://www.dropbox.com/s/dgq6viw1d7ghbox/best_deeplabv3plus_mobilenet_voc_os8.pth?dl=0)   |
 | DeepLabV3-MobileNetV2       | -      |  2.187G      |  -       |  -         |    -   |
 | DeepLabV3Plus-ResNet101     | -      |  25.91G      |  16/16   |  -         |    -   |
 | DeepLabV3-ResNet101         | -      |  24.97G      |    -     |  -         |    -   |
@@ -32,24 +32,24 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 #### Segmentation Results (DeepLabv3Plus-MobileNet)
 
 <div>
-<img src="samples/120_image.png"   width="20%">
-<img src="samples/120_target.png"  width="20%">
-<img src="samples/120_pred.png"    width="20%">
-<img src="samples/120_overlay.png" width="20%">
+<img src="samples/1_image.png"   width="20%">
+<img src="samples/1_target.png"  width="20%">
+<img src="samples/1_pred.png"    width="20%">
+<img src="samples/1_overlay.png" width="20%">
 </div>
 
 <div>
-<img src="samples/417_image.png"   width="20%">
-<img src="samples/417_target.png"  width="20%">
-<img src="samples/417_pred.png"    width="20%">
-<img src="samples/417_overlay.png" width="20%">
+<img src="samples/23_image.png"   width="20%">
+<img src="samples/23_target.png"  width="20%">
+<img src="samples/23_pred.png"    width="20%">
+<img src="samples/23_overlay.png" width="20%">
 </div>
 
 <div>
-<img src="samples/474_image.png"   width="20%">
-<img src="samples/474_target.png"  width="20%">
-<img src="samples/474_pred.png"    width="20%">
-<img src="samples/474_overlay.png" width="20%">
+<img src="samples/114_image.png"   width="20%">
+<img src="samples/114_target.png"  width="20%">
+<img src="samples/114_pred.png"    width="20%">
+<img src="samples/114_overlay.png" width="20%">
 </div>
 
 
@@ -124,7 +124,7 @@ visdom -port 28333
 Run main.py with *"--year 2012_aug"* to train your model on PASCAL VOC2012 Aug.
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.007 --crop_size 513 --batch_size 16 --output_stride 16
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 16
 ```
 
 #### Continue training
@@ -140,7 +140,7 @@ python main.py ... --ckpt YOUR_CKPT --continue_training
 Results will be saved at ./results.
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --output_stride 16 --test_only --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc_os8.pth --save_test_results
+python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 16 --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc_os16.pth --test_only
 ```
 
 ## Reference
