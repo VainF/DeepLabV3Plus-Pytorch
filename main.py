@@ -47,8 +47,8 @@ def get_argparser():
                         help="save segmentation results to \"./results\"")
     parser.add_argument("--total_itrs", type=int, default=30e3,
                         help="epoch number (default: 30k)")
-    parser.add_argument("--lr", type=float, default=0.007,
-                        help="learning rate (default: 0.007)")
+    parser.add_argument("--lr", type=float, default=0.01,
+                        help="learning rate (default: 0.01)")
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='crop validation (default: False)')
     parser.add_argument("--batch_size", type=int, default=16,
@@ -321,7 +321,6 @@ def main():
         cur_epochs += 1
         for (images, labels) in train_loader:
             cur_itrs += 1
-            scheduler.step()
 
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
@@ -374,6 +373,7 @@ def main():
                             (img, target, lbl), axis=2)  # concat along width
                         vis.vis_image('Sample %d' % k, concat_img)
                 model.train()
-                
+            scheduler.step()    
+        
 if __name__ == '__main__':
     main()

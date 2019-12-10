@@ -23,10 +23,10 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 
 |  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
-| DeepLabV3Plus-MobileNetV2   | 16     |  3.103G      |  16/16   |  0.711     |    [Dropbox](https://www.dropbox.com/s/dgq6viw1d7ghbox/best_deeplabv3plus_mobilenet_voc_os8.pth?dl=0)   |
-| DeepLabV3-MobileNetV2       | -      |  2.187G      |  -       |  -         |    -   |
-| DeepLabV3Plus-ResNet101     | -      |  25.91G      |  16/16   |  -         |    -   |
-| DeepLabV3-ResNet101         | -      |  24.97G      |    -     |  -         |    -   |
+| DeepLabV3Plus-MobileNetV2   | 16     |  17.0G      |  16/16   |  0.711     |    [Download](https://www.dropbox.com/s/dgq6viw1d7ghbox/best_deeplabv3plus_mobilenet_voc_os8.pth?dl=0)   |
+| DeepLabV3-MobileNetV2       | 16      |  6.0G      |   16/16  |  -         |    -   |
+| DeepLabV3Plus-ResNet101     | 16      |  83.4G     |  16/16   |  0.783     |    [Download](https://www.dropbox.com/s/bm3hxe7wmakaqc5/best_deeplabv3plus_resnet101_voc_os16.pth?dl=0)   |
+| DeepLabV3-ResNet101         | 16      |  72.1G     |  16/16   |  -         |    -   |
 
 
 #### Segmentation Results (DeepLabv3Plus-MobileNet)
