@@ -155,7 +155,7 @@ python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --g
 ### 5. Train on Cityscapes
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --dataset cityscapes --enable_vis --vis_port 28333 --gpu_id 0  --lr 0.01 --crop_size 480 --batch_size 16 --output_stride 16 --data_root ./datasets/data/cityscapes
+python main.py --model deeplabv3plus_mobilenet --dataset cityscapes --enable_vis --vis_port 28333 --gpu_id 0  --lr 0.1 --crop_size 480 --batch_size 16 --output_stride 16 --data_root ./datasets/data/cityscapes
 ```
 
 ## Reference
