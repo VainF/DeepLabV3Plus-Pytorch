@@ -14,7 +14,7 @@ specify the model architecture with '--model ARCH_NAME' and set the output strid
 #### Atrous Separable Convolution
 Atrous Separable Convolution is supported in this repo. We provide a simple tool ``network.convert_to_separable_conv`` to convert ``nn.Conv2d`` to ``AtrousSeparableConvolution``. **Please run main.py with '--separable_conv' if it is required**. See 'main.py' and 'network/_deeplab.py' for more details. 
 
-## Datsets
+## Datasets
 * [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
 * [Cityscapes](https://www.cityscapes-dataset.com/)
 
