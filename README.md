@@ -152,7 +152,19 @@ Results will be saved at ./results.
 python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 16 --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc_os16.pth --test_only --save_val_results
 ```
 
-### 5. Train on Cityscapes
+## Cityscapes
+
+### 1. Download cityscapes and extract it to 'datasets/data/cityscapes'
+
+```
+/datasets
+    /data
+        /cityscapes
+            /gtFine
+            /leftImg8bit
+```
+
+### 2. Train your model on Cityscapes
 
 ```bash
 python main.py --model deeplabv3plus_mobilenet --dataset cityscapes --enable_vis --vis_port 28333 --gpu_id 0  --lr 0.1 --crop_size 480 --batch_size 16 --output_stride 16 --data_root ./datasets/data/cityscapes
