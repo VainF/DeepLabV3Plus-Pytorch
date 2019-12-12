@@ -16,18 +16,27 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 
 ## Datsets
 * [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
+* [Cityscapes](https://www.cityscapes-dataset.com/)
 
 ## Results
 
-#### Results on PASCAL VOC2012 Aug (In Progress)
+#### Performances on PASCAL VOC2012 Aug (513 x 513)
 
 |  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
-| DeepLabV3Plus-MobileNetV2   | 16     |  17.0G      |  16/16   |  0.711     |    [Download](https://www.dropbox.com/s/0idrhwz6opaj7q4/best_deeplabv3plus_mobilenet_voc_os16.pth?dl=0)   |
-| DeepLabV3-MobileNetV2       | 16      |  6.0G      |   16/16  |  0.701     |  [Download](https://www.dropbox.com/s/uhksxwfcim3nkpo/best_deeplabv3_mobilenet_voc_os16.pth?dl=0)   |
+| DeepLabV3Plus-MobileNetV2   | 16      |  17.0G      |  16/16   |  0.711    |    [Download](https://www.dropbox.com/s/0idrhwz6opaj7q4/best_deeplabv3plus_mobilenet_voc_os16.pth?dl=0)   |
+| DeepLabV3-MobileNetV2       | 16      |  6.0G      |   16/16  |  0.701     |    [Download](https://www.dropbox.com/s/uhksxwfcim3nkpo/best_deeplabv3_mobilenet_voc_os16.pth?dl=0)       |
 | DeepLabV3Plus-ResNet101     | 16      |  83.4G     |  16/16   |  0.783     |    [Download](https://www.dropbox.com/s/bm3hxe7wmakaqc5/best_deeplabv3plus_resnet101_voc_os16.pth?dl=0)   |
-| DeepLabV3-ResNet101         | 16      |  72.1G     |  16/16   |  -         |    -   |
+| DeepLabV3-ResNet101         | 16      |  72.1G     |  16/16   |  0.773     |    [Download](https://www.dropbox.com/s/vtenndnsrnh4068/best_deeplabv3_resnet101_voc_os16.pth?dl=0)       |
 
+#### Performances on Cityscapes (512 x 1024)
+
+|  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
+| :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
+| DeepLabV3Plus-MobileNetV2   | 16      |  33.9G    |  16/16   |  -     |    -       |
+| DeepLabV3-MobileNetV2       | 16      |  11.9G    |  16/16   |  -     |    -       |
+| DeepLabV3Plus-ResNet101     | 16      |  159G     |  16/16   |  -     |    -       |
+| DeepLabV3-ResNet101         | 16      |  136G     |  16/16   |  -     |    -       |
 
 #### Segmentation Results (DeepLabv3Plus-MobileNet)
 
@@ -108,7 +117,7 @@ See chapter 4 of [2]
         ...
 ```
 
-### 3. Train
+### 3. Train on Pascal VOC2012 Aug
 
 #### Visualize training (Optional)
 
@@ -141,6 +150,12 @@ Results will be saved at ./results.
 
 ```bash
 python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 16 --ckpt checkpoints/best_deeplabv3plus_mobilenet_voc_os16.pth --test_only --save_val_results
+```
+
+### 5. Train on Cityscapes
+
+```bash
+python main.py --model deeplabv3plus_mobilenet --dataset cityscapes --enable_vis --vis_port 28333 --gpu_id 0  --lr 0.01 --crop_size 480 --batch_size 16 --output_stride 16 --data_root ./datasets/data/cityscapes
 ```
 
 ## Reference

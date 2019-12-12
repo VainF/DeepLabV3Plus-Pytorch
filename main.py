@@ -38,8 +38,7 @@ def get_argparser():
                                  'deeplabv3_mobilenet', 'deeplabv3plus_mobilenet'], help='model name')
     parser.add_argument("--separable_conv", action='store_true', default=False,
                         help="apply separable conv to decoder and aspp")
-    parser.add_argument("--output_stride", type=int, default=16)
-
+    parser.add_argument("--output_stride", type=int, default=16, choices=[8, 16])
 
     # Train Options
     parser.add_argument("--test_only", action='store_true', default=False)
@@ -71,7 +70,6 @@ def get_argparser():
                         help="print interval of loss (default: 10)")
     parser.add_argument("--val_interval", type=int, default=100,
                         help="epoch interval for eval (default: 100)")
-
     parser.add_argument("--download", action='store_true', default=False,
                         help="download datasets")
 
@@ -125,7 +123,7 @@ def get_dataset(opts):
 
     if opts.dataset == 'cityscapes':
         train_transform = et.ExtCompose([
-            et.ExtScale(0.5),
+            et.ExtResize(512),
             et.ExtRandomCrop(size=(opts.crop_size, opts.crop_size)),
             et.ExtRandomHorizontalFlip(),
             et.ExtToTensor(),
@@ -134,7 +132,7 @@ def get_dataset(opts):
         ])
 
         val_transform = et.ExtCompose([
-            et.ExtScale(0.5),
+            et.ExtResize(512),
             et.ExtToTensor(),
             et.ExtNormalize(mean=[0.485, 0.456, 0.406],
                             std=[0.229, 0.224, 0.225]),
@@ -143,7 +141,7 @@ def get_dataset(opts):
         train_dst = Cityscapes(root=opts.data_root,
                                split='train', transform=train_transform)
         val_dst = Cityscapes(root=opts.data_root,
-                             split='test', transform=val_transform)
+                             split='val', transform=val_transform)
     return train_dst, val_dst
 
 
@@ -204,10 +202,10 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
 
 def main():
     opts = get_argparser().parse_args()
-    if opts.dataset == 'voc':
+    if opts.dataset.lower() == 'voc':
         opts.num_classes = 21
-    elif opts.dataset == 'cityscapes':
-        opts.num_classes = 20
+    elif opts.dataset.lower() == 'cityscapes':
+        opts.num_classes = 19
 
     # Setup visualization
     vis = Visualizer(port=opts.vis_port,
@@ -225,11 +223,15 @@ def main():
     random.seed(opts.random_seed)
 
     # Setup dataloader
+    if opts.dataset=='voc' and not opts.crop_val:
+        val_batch_size = 1
+    else:
+        val_batch_size = opts.batch_size
     train_dst, val_dst = get_dataset(opts)
     train_loader = data.DataLoader(
         train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=2)
     val_loader = data.DataLoader(
-        val_dst, batch_size=opts.batch_size if opts.crop_val else 1, shuffle=True, num_workers=2)
+        val_dst, batch_size=val_batch_size, shuffle=True, num_workers=2)
     print("Dataset: %s, Train set: %d, Val set: %d" %
           (opts.dataset, len(train_dst), len(val_dst)))
 
@@ -356,21 +358,15 @@ def main():
                               (opts.model, opts.dataset,opts.output_stride))
 
                 if vis is not None:  # visualize validation score and samples
-                    vis.vis_scalar("[Val] Overall Acc",
-                                   cur_itrs, val_score['Overall Acc'])
-                    vis.vis_scalar("[Val] Mean IoU", cur_itrs,
-                                   val_score['Mean IoU'])
+                    vis.vis_scalar("[Val] Overall Acc", cur_itrs, val_score['Overall Acc'])
+                    vis.vis_scalar("[Val] Mean IoU", cur_itrs, val_score['Mean IoU'])
                     vis.vis_table("[Val] Class IoU", val_score['Class IoU'])
 
                     for k, (img, target, lbl) in enumerate(ret_samples):
                         img = (denorm(img) * 255).astype(np.uint8)
-                        target = train_dst.decode_target(
-                            target).transpose(2, 0, 1).astype(np.uint8)
-                        lbl = train_dst.decode_target(
-                            lbl).transpose(2, 0, 1).astype(np.uint8)
-
-                        concat_img = np.concatenate(
-                            (img, target, lbl), axis=2)  # concat along width
+                        target = train_dst.decode_target(target).transpose(2, 0, 1).astype(np.uint8)
+                        lbl = train_dst.decode_target(lbl).transpose(2, 0, 1).astype(np.uint8)
+                        concat_img = np.concatenate((img, target, lbl), axis=2)  # concat along width
                         vis.vis_image('Sample %d' % k, concat_img)
                 model.train()
             scheduler.step()    
