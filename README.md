@@ -15,17 +15,17 @@ specify the model architecture with '--model ARCH_NAME' and set the output strid
 Atrous Separable Convolution is supported in this repo. We provide a simple tool ``network.convert_to_separable_conv`` to convert ``nn.Conv2d`` to ``AtrousSeparableConvolution``. **Please run main.py with '--separable_conv' if it is required**. See 'main.py' and 'network/_deeplab.py' for more details. 
 
 ## Datsets
-* [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
+* [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
 * [Cityscapes](https://www.cityscapes-dataset.com/)
 
 ## Results
 
-#### Performances on PASCAL VOC2012 Aug (513 x 513)
+#### Performances on Pascal VOC2012 Aug (513 x 513)
 
 |  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
-| DeepLabV3Plus-MobileNetV2   | 16      |  17.0G      |  16/16   |  0.711    |    [Download](https://www.dropbox.com/s/0idrhwz6opaj7q4/best_deeplabv3plus_mobilenet_voc_os16.pth?dl=0)   |
-| DeepLabV3-MobileNetV2       | 16      |  6.0G      |   16/16  |  0.701     |    [Download](https://www.dropbox.com/s/uhksxwfcim3nkpo/best_deeplabv3_mobilenet_voc_os16.pth?dl=0)       |
+| DeepLabV3Plus-MobileNet   | 16      |  17.0G      |  16/16   |  0.711    |    [Download](https://www.dropbox.com/s/0idrhwz6opaj7q4/best_deeplabv3plus_mobilenet_voc_os16.pth?dl=0)   |
+| DeepLabV3-MobileNet       | 16      |  6.0G      |   16/16  |  0.701     |    [Download](https://www.dropbox.com/s/uhksxwfcim3nkpo/best_deeplabv3_mobilenet_voc_os16.pth?dl=0)       |
 | DeepLabV3Plus-ResNet101     | 16      |  83.4G     |  16/16   |  0.783     |    [Download](https://www.dropbox.com/s/bm3hxe7wmakaqc5/best_deeplabv3plus_resnet101_voc_os16.pth?dl=0)   |
 | DeepLabV3-ResNet101         | 16      |  72.1G     |  16/16   |  0.773     |    [Download](https://www.dropbox.com/s/vtenndnsrnh4068/best_deeplabv3_resnet101_voc_os16.pth?dl=0)       |
 
@@ -33,12 +33,12 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 
 |  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
-| DeepLabV3Plus-MobileNetV2   | 16      |  33.9G    |  16/16   |  -     |    -       |
-| DeepLabV3-MobileNetV2       | 16      |  11.9G    |  16/16   |  -     |    -       |
+| DeepLabV3Plus-MobileNet   | 16      |  33.9G    |  16/16   |  -     |    -       |
+| DeepLabV3-MobileNet       | 16      |  11.9G    |  16/16   |  -     |    -       |
 | DeepLabV3Plus-ResNet101     | 16      |  159G     |  16/16   |  -     |    -       |
 | DeepLabV3-ResNet101         | 16      |  136G     |  16/16   |  -     |    -       |
 
-#### Segmentation Results (DeepLabv3Plus-MobileNet)
+#### Segmentation Results on Pascal VOC2012 (DeepLabv3Plus-MobileNet)
 
 <div>
 <img src="samples/1_image.png"   width="20%">
@@ -130,7 +130,7 @@ visdom -port 28333
 
 #### Train with OS=16
 
-Run main.py with *"--year 2012_aug"* to train your model on PASCAL VOC2012 Aug.
+Run main.py with *"--year 2012_aug"* to train your model on Pascal VOC2012 Aug.
 
 ```bash
 python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 16
