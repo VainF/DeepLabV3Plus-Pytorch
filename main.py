@@ -48,6 +48,9 @@ def get_argparser():
                         help="epoch number (default: 30k)")
     parser.add_argument("--lr", type=float, default=0.01,
                         help="learning rate (default: 0.01)")
+    parser.add_argument("--lr_policy", type=str, default='poly', choices=['poly', 'step'],
+                        help="learning rate scheduler policy")
+    parser.add_argument("--step_size", type=int, default=10000)
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='crop validation (default: False)')
     parser.add_argument("--batch_size", type=int, default=16,
@@ -158,7 +161,7 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
 
     with torch.no_grad():
         for i, (images, labels) in tqdm(enumerate(loader)):
-
+            
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
 
@@ -262,7 +265,10 @@ def main():
     ], lr=opts.lr, momentum=0.9, weight_decay=opts.weight_decay)
     #optimizer = torch.optim.SGD(params=model.parameters(), lr=opts.lr, momentum=0.9, weight_decay=opts.weight_decay)
     # torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.lr_decay_step, gamma=opts.lr_decay_factor)
-    scheduler = utils.PolyLR(optimizer, opts.total_itrs, power=0.9)
+    if opts.lr_policy=='poly':
+        scheduler = utils.PolyLR(optimizer, opts.total_itrs, power=0.9)
+    elif opts.lr_policy=='step':
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.step_size, gamma=0.1)
 
     # Set up criterion
     #criterion = utils.get_loss(opts.loss_type)

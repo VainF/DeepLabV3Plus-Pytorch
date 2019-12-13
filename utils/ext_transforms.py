@@ -108,7 +108,7 @@ class ExtRandomScale(object):
         """
         assert img.size == lbl.size
         scale = random.uniform(self.scale_range[0], self.scale_range[1])
-        target_size = ( int(img.size[0]*scale), int(img.size[1]*scale) )
+        target_size = ( int(img.size[1]*scale), int(img.size[0]*scale) )
         return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, Image.NEAREST)
 
     def __repr__(self):
@@ -118,11 +118,7 @@ class ExtRandomScale(object):
 class ExtScale(object):
     """Resize the input PIL Image to the given scale.
     Args:
-        size (sequence or int): Desired output size. If size is a sequence like
-            (h, w), output size will be matched to this. If size is an int,
-            smaller edge of the image will be matched to this number.
-            i.e, if height > width, then image will be rescaled to
-            (size * height / width, size)
+        Scale (sequence or int): scale factors
         interpolation (int, optional): Desired interpolation. Default is
             ``PIL.Image.BILINEAR``
     """
@@ -141,7 +137,7 @@ class ExtScale(object):
             PIL Image: Rescaled label.
         """
         assert img.size == lbl.size
-        target_size = ( int(img.size[0]*self.scale), int(img.size[1]*self.scale) )
+        target_size = ( int(img.size[1]*self.scale), int(img.size[0]*self.scale) ) # (H, W)
         return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, Image.NEAREST)
 
     def __repr__(self):
