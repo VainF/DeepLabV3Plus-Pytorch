@@ -60,15 +60,15 @@ class Cityscapes(data.Dataset):
         CityscapesClass('license plate',        -1, 255, 'vehicle', 7, False, True, (0, 0, 142)),
     ]
 
-    #train_id_to_color = [c.color for c in classes if (c.train_id != -1 and c.train_id != 255)]
-    #train_id_to_color.append([0, 0, 0])
-    #train_id_to_color = np.array(train_id_to_color)
-    #id_to_train_id = np.array([c.train_id for c in classes])
-    
-    train_id_to_color = [(0, 0, 0), (128, 64, 128), (70, 70, 70), (153, 153, 153), (107, 142, 35),
-                          (70, 130, 180), (220, 20, 60), (0, 0, 142)]
+    train_id_to_color = [c.color for c in classes if (c.train_id != -1 and c.train_id != 255)]
+    train_id_to_color.append([0, 0, 0])
     train_id_to_color = np.array(train_id_to_color)
-    id_to_train_id = np.array([c.category_id for c in classes], dtype='uint8') - 1
+    id_to_train_id = np.array([c.train_id for c in classes])
+    
+    #train_id_to_color = [(0, 0, 0), (128, 64, 128), (70, 70, 70), (153, 153, 153), (107, 142, 35),
+    #                      (70, 130, 180), (220, 20, 60), (0, 0, 142)]
+    #train_id_to_color = np.array(train_id_to_color)
+    #id_to_train_id = np.array([c.category_id for c in classes], dtype='uint8') - 1
 
     def __init__(self, root, split='train', mode='fine', target_type='semantic', transform=None):
         self.root = os.path.expanduser(root)
@@ -107,8 +107,8 @@ class Cityscapes(data.Dataset):
 
     @classmethod
     def decode_target(cls, target):
-        #target[target == 255] = 19
-        target = target.astype('uint8') + 1
+        target[target == 255] = 19
+        #target = target.astype('uint8') + 1
         return cls.train_id_to_color[target]
 
     def __getitem__(self, index):

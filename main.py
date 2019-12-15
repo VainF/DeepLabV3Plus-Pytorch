@@ -126,8 +126,9 @@ def get_dataset(opts):
 
     if opts.dataset == 'cityscapes':
         train_transform = et.ExtCompose([
-            et.ExtResize(512),
+            #et.ExtResize( 512 ),
             et.ExtRandomCrop(size=(opts.crop_size, opts.crop_size)),
+            et.ExtColorJitter( brightness=0.5, contrast=0.5, saturation=0.5 ),
             et.ExtRandomHorizontalFlip(),
             et.ExtToTensor(),
             et.ExtNormalize(mean=[0.485, 0.456, 0.406],
@@ -135,7 +136,7 @@ def get_dataset(opts):
         ])
 
         val_transform = et.ExtCompose([
-            et.ExtResize(512),
+            #et.ExtResize( 512 ),
             et.ExtToTensor(),
             et.ExtNormalize(mean=[0.485, 0.456, 0.406],
                             std=[0.229, 0.224, 0.225]),
@@ -208,7 +209,7 @@ def main():
     if opts.dataset.lower() == 'voc':
         opts.num_classes = 21
     elif opts.dataset.lower() == 'cityscapes':
-        opts.num_classes = 7
+        opts.num_classes = 19
 
     # Setup visualization
     vis = Visualizer(port=opts.vis_port,
