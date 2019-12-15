@@ -38,7 +38,7 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
 | DeepLabV3Plus-MobileNet   | 16      |  135G      |  16/16   |  0.721  |    [Download](https://www.dropbox.com/s/753ojyvsh3vdjol/best_deeplabv3plus_mobilenet_cityscapes_os16.pth?dl=0)       |
 | DeepLabV3-MobileNet       | -      |  47.2G     |  16/16   |  -      |    -       |
-| DeepLabV3Plus-ResNet101     | -      |  634fG    |  16/16   |  -      |    -       |
+| DeepLabV3Plus-ResNet101     | -      |  634G    |  16/16   |  -      |    -       |
 | DeepLabV3-ResNet101         | -      |  545G     |  16/16   |  -      |    -       |
 
 #### Segmentation Results on Pascal VOC2012 (DeepLabv3Plus-MobileNet)
