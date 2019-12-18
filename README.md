@@ -145,7 +145,7 @@ visdom -port 28333
 
 #### Train with OS=16
 
-Run main.py with *"--year 2012_aug"* to train your model on Pascal VOC2012 Aug.
+Run main.py with *"--year 2012_aug"* to train your model on Pascal VOC2012 Aug. You can also parallel your training on 4 GPUs with '--gpu_id 0,1,2,3'
 
 ```bash
 python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --gpu_id 0 --year 2012_aug --crop_val --lr 0.01 --crop_size 513 --batch_size 16 --output_stride 16

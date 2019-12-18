@@ -55,6 +55,8 @@ def get_argparser():
                         help='crop validation (default: False)')
     parser.add_argument("--batch_size", type=int, default=16,
                         help='batch size (default: 16)')
+    parser.add_argument("--val_batch_size", type=int, default=4,
+                        help='batch size for validation (default: 4)')
     parser.add_argument("--crop_size", type=int, default=513)
     
     parser.add_argument("--ckpt", default=None, type=str,
@@ -228,14 +230,13 @@ def main():
 
     # Setup dataloader
     if opts.dataset=='voc' and not opts.crop_val:
-        val_batch_size = 1
-    else:
-        val_batch_size = opts.batch_size
+        opts.val_batch_size = 1
+    
     train_dst, val_dst = get_dataset(opts)
     train_loader = data.DataLoader(
         train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=2)
     val_loader = data.DataLoader(
-        val_dst, batch_size=val_batch_size, shuffle=True, num_workers=2)
+        val_dst, batch_size=opts.val_batch_size, shuffle=True, num_workers=2)
     print("Dataset: %s, Train set: %d, Val set: %d" %
           (opts.dataset, len(train_dst), len(val_dst)))
 
@@ -253,7 +254,7 @@ def main():
     if opts.separable_conv and 'plus' in opts.model:
         network.convert_to_separable_conv(model.classifier)
     utils.set_bn_momentum(model.backbone, momentum=0.01)
-    model = model.to(device)
+    #model = model.to(device)
     #print(model)
     
     # Set up metrics
@@ -281,16 +282,15 @@ def main():
     def save_ckpt(path):
         """ save current model
         """
-        state = {
+        torch.save({
             "cur_itrs": cur_itrs,
-            "model_state": model.state_dict(),
+            "model_state": model.module.state_dict(),
             "optimizer_state": optimizer.state_dict(),
             "scheduler_state": scheduler.state_dict(),
             "best_score": best_score,
-        }
-        torch.save(state, path)
+        }, path)
         print("Model saved as %s" % path)
-
+    
     utils.mkdir('checkpoints')
     # Restore
     best_score = 0.0
@@ -309,6 +309,9 @@ def main():
         del checkpoint  # free memory
     else:
         print("[!] Retrain")
+
+    model = nn.DataParallel(model)
+    model.to(device)
 
     #==========   Train Loop   ==========#
     vis_sample_id = np.random.randint(0, len(val_loader), opts.vis_num_samples,
