@@ -13,6 +13,10 @@ Specify the model architecture with '--model ARCH_NAME' and set the output strid
 
 All available pretrained models: [Dropbox](https://www.dropbox.com/sh/w3z9z8lqpi8b2w7/AAB0vkl4F5vy6HdIhmRCTKHSa?dl=0)
 
+Load the pretrained model:
+```python
+model.load_state_dict( torch.load( CKPT_PATH )['model_state']  )
+```
 
 #### Atrous Separable Convolution
 Atrous Separable Convolution is supported in this repo. We provide a simple tool ``network.convert_to_separable_conv`` to convert ``nn.Conv2d`` to ``AtrousSeparableConvolution``. **Please run main.py with '--separable_conv' if it is required**. See 'main.py' and 'network/_deeplab.py' for more details. 
@@ -23,7 +27,10 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 
 ## Results
 
-#### Performances on Pascal VOC2012 Aug (20 classes, 513 x 513, 513 random crop)
+#### Performances on Pascal VOC2012 Aug (20 classes, 513 x 513)
+
+Training: 513x513 random crop  
+validation: 513x513 center crop
 
 |  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
@@ -33,6 +40,9 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 | DeepLabV3-ResNet101         | 16      |  72.1G     |  16/16   |  0.773     |    [Download](https://www.dropbox.com/s/vtenndnsrnh4068/best_deeplabv3_resnet101_voc_os16.pth?dl=0)       |
 
 #### Performances on Cityscapes (19 classes, 1024 x 2048, 768 random crop)
+
+Training: 768x768 random crop  
+validation: 1024x2048
 
 |  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Checkpoint  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | 
