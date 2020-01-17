@@ -39,7 +39,7 @@ validation: 513x513 center crop
 | DeepLabV3Plus-ResNet101     | 16      |  83.4G     |  16/16   |  0.783     |    [Download](https://www.dropbox.com/s/bm3hxe7wmakaqc5/best_deeplabv3plus_resnet101_voc_os16.pth?dl=0)   |
 | DeepLabV3-ResNet101         | 16      |  72.1G     |  16/16   |  0.773     |    [Download](https://www.dropbox.com/s/vtenndnsrnh4068/best_deeplabv3_resnet101_voc_os16.pth?dl=0)       |
 
-#### Performances on Cityscapes (19 classes, 1024 x 2048, 768 random crop)
+#### Performances on Cityscapes (19 classes, 1024 x 2048)
 
 Training: 768x768 random crop  
 validation: 1024x2048
