@@ -27,7 +27,7 @@ Atrous Separable Convolution is supported in this repo. We provide a simple tool
 
 ## Results
 
-#### Performances on Pascal VOC2012 Aug (20 classes, 513 x 513)
+#### Performances on Pascal VOC2012 Aug (21 classes, 513 x 513)
 
 Training: 513x513 random crop  
 validation: 513x513 center crop
