@@ -88,7 +88,7 @@ validation: 1024x2048
 </div>
 
 
-#### Vsualization of training
+#### Visualization of training
 
 ![trainvis](samples/visdom-screenshoot.png)
 
