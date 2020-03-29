@@ -295,8 +295,11 @@ def main():
     cur_itrs = 0
     cur_epochs = 0
     if opts.ckpt is not None and os.path.isfile(opts.ckpt):
+        # https://github.com/VainF/DeepLabV3Plus-Pytorch/issues/8#issuecomment-605601402, @PytaichukBohdan
         checkpoint = torch.load(opts.ckpt, map_location=torch.device('cpu'))
         model.load_state_dict(checkpoint["model_state"])
+        model = nn.DataParallel(model)
+        model.to(device)
         if opts.continue_training:
             optimizer.load_state_dict(checkpoint["optimizer_state"])
             scheduler.load_state_dict(checkpoint["scheduler_state"])
@@ -307,9 +310,8 @@ def main():
         del checkpoint  # free memory
     else:
         print("[!] Retrain")
-
-    model = nn.DataParallel(model)
-    model.to(device)
+        model = nn.DataParallel(model)
+        model.to(device)
 
     #==========   Train Loop   ==========#
     vis_sample_id = np.random.randint(0, len(val_loader), opts.vis_num_samples,
