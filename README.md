@@ -1,6 +1,6 @@
 # DeepLabv3Plus-Pytorch
 
-DeepLabV3 and DeepLabV3+ with MobileNetv2 and ResNet backbones for Pytorch.
+Pretrained DeepLabV3 and DeepLabV3+ on VOC & Cityscapes in Pytorch.
 
 #### Available Architectures
 Specify the model architecture with '--model ARCH_NAME' and set the output stride with '--output_stride OUTPUT_STRIDE'.
