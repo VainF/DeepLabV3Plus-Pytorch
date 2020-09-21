@@ -18,6 +18,16 @@ Load the pretrained model:
 model.load_state_dict( torch.load( CKPT_PATH )['model_state']  )
 ```
 
+Visualize segmentation outputs:
+```python
+outputs = model(images)
+preds = outputs.max(1)[1].detach().cpu().numpy()
+viz_preds = val_dst.decode_target(preds) # To RGB images: N, H, W, 3
+# Do whatever you like here with the colorized segmentation maps
+```
+
+
+
 #### Atrous Separable Convolution
 Atrous Separable Convolution is supported in this repo. We provide a simple tool ``network.convert_to_separable_conv`` to convert ``nn.Conv2d`` to ``AtrousSeparableConvolution``. **Please run main.py with '--separable_conv' if it is required**. See 'main.py' and 'network/_deeplab.py' for more details. 
 
