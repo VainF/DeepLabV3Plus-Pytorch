@@ -22,8 +22,10 @@ Visualize segmentation outputs:
 ```python
 outputs = model(images)
 preds = outputs.max(1)[1].detach().cpu().numpy()
-viz_preds = val_dst.decode_target(preds) # To RGB images: N, H, W, 3
+viz_preds = val_dst.decode_target(preds) # To RGB images, (N, H, W, 3), ranged 0~255, numpy array
 # Do whatever you like here with the colorized segmentation maps
+viz_preds = viz_preds.transpose(0, 2, 3, 1).astype('uint8')
+viz_preds = Image.fromarray(viz_preds[0]) # to PIL Image
 ```
 
 
