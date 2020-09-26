@@ -13,12 +13,12 @@ Specify the model architecture with '--model ARCH_NAME' and set the output strid
 
 Available models: [Dropbox](https://www.dropbox.com/sh/w3z9z8lqpi8b2w7/AAB0vkl4F5vy6HdIhmRCTKHSa?dl=0), [Tencent Weiyun](https://share.weiyun.com/qqx78Pv5)
 
-Load the pretrained model:
+#### Load the pretrained model:
 ```python
 model.load_state_dict( torch.load( CKPT_PATH )['model_state']  )
 ```
 
-Visualize segmentation outputs:
+#### Visualize segmentation outputs:
 ```python
 outputs = model(images)
 preds = outputs.max(1)[1].detach().cpu().numpy()
