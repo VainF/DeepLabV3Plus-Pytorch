@@ -115,7 +115,7 @@ pip install -r requirements.txt
 
 ### 2. Prepare Datasets
 
-#### pascal voc
+#### Pascal VOC
 You can run train.py with "--download" option to download and extract pascal voc dataset. The defaut path is './datasets/data':
 
 ```
@@ -131,7 +131,7 @@ You can run train.py with "--download" option to download and extract pascal voc
         ...
 ```
 
-#### trainaug (Recommended)
+#### Pascal VOC trainaug (Recommended!!)
 
 See chapter 4 of [2]
 
