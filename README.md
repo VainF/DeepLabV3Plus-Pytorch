@@ -139,7 +139,7 @@ See chapter 4 of [2]
 
 *./datasets/data/train_aug.txt* includes names of 10582 trainaug images (val images are excluded). You need to download additional labels from [Dropbox](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip?dl=0) or [Tencent Weiyun](https://share.weiyun.com/5NmJ6Rk). Those labels come from [DrSleep's repo](https://github.com/DrSleep/tensorflow-deeplab-resnet).
 
-**Please extract trainaug files (SegmentationClassAug) to the VOC2012 directory.**
+Extract trainaug labels (SegmentationClassAug) to the VOC2012 directory.
 
 ```
 /datasets
@@ -147,7 +147,7 @@ See chapter 4 of [2]
         /VOCdevkit  
             /VOC2012
                 /SegmentationClass
-                /SegmentationClassAug
+                /SegmentationClassAug  # <= the trainaug labels
                 /JPEGImages
                 ...
             ...
