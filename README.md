@@ -2,7 +2,7 @@
 
 DeepLabv3, DeepLabv3+ with pretrained models for Pascal VOC & Cityscapes.
 
-## Summary 
+## Quick Start 
 
 ### 1. Available Architectures
 Specify the model architecture with '--model ARCH_NAME' and set the output stride using '--output_stride OUTPUT_STRIDE'.
@@ -118,7 +118,7 @@ validation: 1024x2048
 ![trainvis](samples/visdom-screenshoot.png)
 
 
-## Quick Start (Pascal VOC)
+## Pascal VOC
 
 ### 1. Requirements
 
