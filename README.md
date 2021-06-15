@@ -45,10 +45,6 @@ Image folder:
 python predict.py --input ~/Datasets/Cityscapes/leftImg8bit/train/bremen  --dataset cityscapes --model deeplabv3plus_mobilenet --ckpt checkpoints/best_deeplabv3plus_mobilenet_cityscapes_os16.pth --save_val_results_to test_results
 ```
 
-## Datasets
-* [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
-* [Cityscapes](https://www.cityscapes-dataset.com/)
-
 ## Results
 
 ### 1. Performance on Pascal VOC2012 Aug (21 classes, 513 x 513)
