@@ -1,3 +1,4 @@
+import collections
 import torchvision
 import torch
 import torchvision.transforms.functional as F
