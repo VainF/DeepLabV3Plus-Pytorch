@@ -1,8 +1,11 @@
 import os
 
 import numpy as np
+import torch
 import torch.nn as nn
 from torchvision.transforms.functional import normalize
+import typing as t
+from utils.logger import logger
 
 
 def denormalize(tensor, mean, std):
@@ -42,3 +45,21 @@ def fix_bn(model):
 def mkdir(path):
     if not os.path.exists(path):
         os.mkdir(path)
+
+
+def save_ckpt(cur_itrs, path, *, model, optimizer, scheduler, best_score, scaler):
+    """ save current model
+    """
+    torch.save({
+        "cur_itrs": cur_itrs,
+        "model_state": model.module.state_dict(),
+        "optimizer_state": optimizer.state_dict(),
+        "scheduler_state": scheduler.state_dict(),
+        "best_score": best_score,
+        "scaler": scaler.state_dict(),
+    }, path)
+    logger.trace("Model saved as %s" % path)
+
+
+def get_lrs_from_optimizer(optimizer) -> t.List[float]:
+    return [group["lr"] for group in optimizer.param_groups]

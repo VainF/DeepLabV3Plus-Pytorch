@@ -3,7 +3,6 @@ VOCdevkit
 checkpoints
 .vscode
 *.pyc
-__pycache__
 results
 checkpoints_bak
 cityscapes

@@ -1,0 +1,7 @@
+#!/bin/bash
+PORT=8097
+visdom -port $PORT &
+sleep 2s
+
+python main.py --model deeplabv3_resnet50 --dataset cityscapes --enable_vis --vis_port $PORT --gpu_id 0 --lr 0.1 \
+  --crop_size 768 --batch_size 16 --output_stride 16 --data_root ./datasets/data/cityscapes --enable-scale --vis_env baseline
