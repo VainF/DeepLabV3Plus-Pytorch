@@ -1,4 +1,22 @@
 #!/bin/bash
+#SBATCH --account=rrg-mpederso
+#SBATCH --gres=gpu:1              # Number of GPU(s) per node
+#SBATCH --cpus-per-task=12         # CPU cores/threads
+#SBATCH --mem=32000M               # memory per node
+#SBATCH --time=0-06:00            # time (DD-HH:MM)
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+module load python/3.8.2
+source ~/venv/bin/activate
+
+export OMP_NUM_THREADS=1
+export PYTHONOPTIMIZE=1
+export PYTHONWARNINGS=ignore
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+export LOGURU_LEVEL=TRACE
+echo $(pwd)
+python -c 'import torch; print(torch.randn(1,1,1,1,device=\"cuda\"))'
+nvidia-smi
+
 PORT=8097
 visdom -port $PORT &
 sleep 2s
