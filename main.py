@@ -17,6 +17,7 @@ import network
 import utils
 from datasets import VOCSegmentation, Cityscapes
 from meters.averagemeter import AverageValueMeter
+from meters.timing import Timer
 from metrics import StreamSegMetrics
 from utils import ext_transforms as et, save_ckpt, get_lrs_from_optimizer
 from utils.logger import logger
@@ -329,25 +330,28 @@ def main():
     cur_epochs += 1
     loss_meter = AverageValueMeter()
     train_loader_iter = tqdm(train_loader, total=int(opts.total_itrs))
+    timer = Timer()
     for (images, labels) in train_loader_iter:
-        cur_iter += 1
-        optimizer.zero_grad()
+        with timer:
+            cur_iter += 1
+            optimizer.zero_grad()
 
-        with auto_cast:
-            images = images.to(device, dtype=torch.float)
-            labels = labels.to(device, dtype=torch.long)
+            with auto_cast:
+                images = images.to(device, dtype=torch.float)
+                labels = labels.to(device, dtype=torch.long)
 
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
-        loss_meter.add(loss.item())
-        if vis:
-            vis.vis_scalar('Loss', cur_iter, loss.item())
-        tqdm_post_fix_dict = {"lrs": get_lrs_from_optimizer(optimizer), "loss": loss_meter.summary()}
-        train_loader_iter.set_postfix_str(item2str(tqdm_post_fix_dict))
-        scheduler.step()
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+            loss_meter.add(loss.item())
+            if vis:
+                vis.vis_scalar('Loss', cur_iter, loss.item())
+            tqdm_post_fix_dict = {"lrs": get_lrs_from_optimizer(optimizer), "loss": loss_meter.summary(),
+                                  "tik": timer.summary()}
+            train_loader_iter.set_postfix_str(item2str(tqdm_post_fix_dict))
+            scheduler.step()
 
         if cur_iter % opts.val_interval == 0:
             save_ckpt(cur_iter, 'checkpoints/latest_%s_%s_os%d.pth' %
@@ -377,6 +381,7 @@ def main():
                     concat_img = np.concatenate((img, target, lbl), axis=2)  # concat along width
                     vis.vis_image('Sample %d' % k, concat_img)
             model.train()
+            timer = Timer()
 
         if cur_iter >= opts.total_itrs:
             logger.info("Training reaches its end.")
