@@ -18,12 +18,19 @@ from tqdm import tqdm
 import network
 import utils
 from datasets import VOCSegmentation, Cityscapes
+from datasets.cityscapes import split_data
+from losses import semi_loss_zoo
+from losses.compose import LossCompose
+from losses.mp import MultiCoreKLwithIgnoreIndex
 from meters.averagemeter import AverageValueMeter
 from metrics import StreamSegMetrics
-from utils import ext_transforms as et, save_ckpt, get_lrs_from_optimizer
+from utils import ext_transforms as et, save_ckpt, get_lrs_from_optimizer, grouper
 from utils.logger import logger
 from utils.pretty_print import item2str
+from utils.sampler import InfiniteRandomSampler
 from utils.visualizer import Visualizer
+
+torch.backends.cudnn.benchmark = True
 
 
 def get_args():
@@ -35,8 +42,7 @@ def get_args():
                                 help="path to Dataset")
     dataset_parser.add_argument("--dataset", type=str, default='voc',
                                 choices=['voc', 'cityscapes'], help='Name of dataset')
-    dataset_parser.add_argument("--num_classes", type=int, default=None,
-                                help="num classes (default: None)")
+
     # PASCAL VOC Options
     dataset_parser.add_argument("--year", type=str, default='2012',
                                 choices=['2012_aug', '2012', '2011', '2009', '2008', '2007'], help='year of VOC')
@@ -50,6 +56,7 @@ def get_args():
                                        'deeplabv3_mobilenet', 'deeplabv3plus_mobilenet'], help='model name')
     model_parser.add_argument("--separable_conv", action='store_true', default=False,
                               help="apply separable conv to decoder and aspp")
+    model_parser.add_argument("--num_classes", type=int, help="num classes for output classes", required=True)
     model_parser.add_argument("--output_stride", type=int, default=16, choices=[8, 16])
 
     # Train Options
@@ -87,9 +94,14 @@ def get_args():
     tra_parser.add_argument("--download", action='store_true', default=False,
                             help="download datasets")
 
+    # LOSS part
     loss_parser = parser.add_argument_group("loss")
     loss_parser.add_argument("--loss_type", type=str, default='cross_entropy',
                              choices=['cross_entropy', 'focal_loss'], help="loss type (default: False)")
+    loss_parser.add_argument("--semi_loss_type", type=str, nargs="+", default=['null'],
+                             choices=['null', 'orth', "mi"], help="semi supervised loss type")
+    loss_parser.add_argument("--semi_weights", type=float, nargs="+", default=[0.0, ],
+                             help="semi-supervised loss weight")
 
     visdom_parser = parser.add_argument_group("visdom")
 
@@ -167,7 +179,7 @@ def get_dataset(opts):
 
 
 @torch.no_grad()
-def validate(opts, model, loader, device, metrics, ret_samples_ids=None, *, auto_cast):
+def validate(opts, model, loader, device, metrics, ret_samples_ids=None, *, auto_cast, group_func=None):
     """Do validation and return specified samples"""
     metrics.reset()
     ret_samples = []
@@ -185,6 +197,8 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None, *, auto
             labels = labels.to(device, dtype=torch.long)
 
             outputs = model(images)
+            if group_func:
+                outputs = group_func(outputs)
         preds = outputs.detach().max(dim=1)[1].cpu().numpy()
         targets = labels.cpu().numpy()
 
@@ -225,9 +239,11 @@ def main():
     opts = get_args().parse_args()
     logger.info(pprint.pformat(opts))
     if opts.dataset.lower() == 'voc':
-        opts.num_classes = 21
+        opts.true_num_classes = 21
     elif opts.dataset.lower() == 'cityscapes':
-        opts.num_classes = 19
+        opts.true_num_classes = 19
+    else:
+        raise NotImplementedError(opts.dataset.lower())
 
     # Setup visualization
     vis = Visualizer(port=opts.vis_port, env=opts.vis_env) if opts.enable_vis \
@@ -250,14 +266,21 @@ def main():
         opts.val_batch_size = 1
 
     train_dst, val_dst = get_dataset(opts)
-    from utils.sampler import InfiniteRandomSampler
-    tra_sampler = InfiniteRandomSampler(train_dst, shuffle=True)
+    labeled_set, unlabeled_set = split_data(train_dst, labeled_ratio=0.1)
+    del train_dst
+    tra_sampler = InfiniteRandomSampler(labeled_set, shuffle=True)
     train_loader = data.DataLoader(
-        train_dst, batch_size=opts.batch_size, sampler=tra_sampler, num_workers=12)
+        labeled_set, batch_size=opts.batch_size, sampler=tra_sampler, num_workers=12)
+    unlabeled_sampler = InfiniteRandomSampler(unlabeled_set, shuffle=True)
+
+    unlabeled_loader = data.DataLoader(
+        unlabeled_set, batch_size=opts.batch_size, sampler=unlabeled_sampler, num_workers=12)
+
     val_loader = data.DataLoader(
         val_dst, batch_size=opts.val_batch_size, shuffle=True, num_workers=4, persistent_workers=True)
-    logger.info("Dataset: %s, Train set: %d, Val set: %d" %
-                (opts.dataset, len(train_dst), len(val_dst)))
+
+    logger.info("Dataset: %s, Labeled set: %d, Unlabeled set: %d, Val set: %d" %
+                (opts.dataset, len(labeled_set), len(unlabeled_set), len(val_dst)))
 
     model = network.model_map[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
     if opts.separable_conv and 'plus' in opts.model:
@@ -282,12 +305,24 @@ def main():
         raise NotImplementedError(opts.lr_policy)
 
     # Set up criterion
-    if opts.loss_type == 'focal_loss':
-        criterion = utils.FocalLoss(ignore_index=255, size_average=True)
-    elif opts.loss_type == 'cross_entropy':
-        criterion = nn.CrossEntropyLoss(ignore_index=255, reduction='mean')
+    # if opts.loss_type == 'focal_loss':
+    #     criterion = utils.FocalLoss(ignore_index=255, size_average=True)
+    if opts.loss_type == 'cross_entropy':
+        assert opts.num_classes % opts.true_num_classes == 0
+        criterion = MultiCoreKLwithIgnoreIndex(ignore_index=255,
+                                               groups=list(grouper(range(
+                                                   opts.true_num_classes * (opts.num_classes // opts.true_num_classes)),
+                                                   opts.true_num_classes)))
     else:
         raise NotImplementedError(opts.loss_type)
+
+    # set up semi-supervised criterion
+    semi_criteria = LossCompose()
+    for semi_name, semi_weight in zip(opts.semi_loss_type, opts.semi_weights):
+        _criterion = semi_loss_zoo[semi_name](prototypes=model.classifier.classifier[4].weight, )
+
+        semi_criteria.register_loss(_criterion, semi_weight)
+    logger.info(f"Semi-supervised losses : {semi_criteria}")
 
     scaler = GradScaler(enabled=opts.enable_scale)
     auto_cast = autocast(enabled=opts.enable_scale)
@@ -328,7 +363,7 @@ def main():
         model.eval()
         val_score, ret_samples = validate(
             opts=opts, model=model, loader=val_loader, device=device, metrics=metrics, ret_samples_ids=vis_sample_id,
-            auto_cast=auto_cast)
+            auto_cast=auto_cast, group_func=criterion.reduced_simplex)
         logger.info(metrics.to_str(val_score))
         return
 
@@ -338,7 +373,7 @@ def main():
     cur_epochs += 1
     loss_meter = AverageValueMeter()
     train_loader_iter = tqdm(train_loader, total=int(opts.total_itrs))
-    for (images, labels) in train_loader_iter:
+    for (images, labels), (unlabeled_images, _) in zip(train_loader_iter, unlabeled_loader):
         cur_iter += 1
         optimizer.zero_grad()
 
@@ -346,9 +381,15 @@ def main():
             images = images.to(device, dtype=torch.float)
             labels = labels.to(device, dtype=torch.long)
 
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-        scaler.scale(loss).backward()
+            unlabeled_images = unlabeled_images.to(device, dtype=torch.float)
+
+            outputs_simplex = model(images).softmax(1)
+            loss = criterion(outputs_simplex, labels)
+            unlabeled_simplex = model(unlabeled_images).softmax(1)
+            unlabeled_loss = semi_criteria(unlabeled_simplex)
+            total_loss = loss + unlabeled_loss
+
+        scaler.scale(total_loss).backward()
         scaler.step(optimizer)
         scaler.update()
         loss_meter.add(loss.item())
@@ -367,7 +408,7 @@ def main():
             model.eval()
             val_score, ret_samples = validate(
                 opts=opts, model=model, loader=val_loader, device=device, metrics=metrics,
-                ret_samples_ids=vis_sample_id, auto_cast=auto_cast)
+                ret_samples_ids=vis_sample_id, auto_cast=auto_cast, group_func=criterion.reduced_simplex)
             logger.info(metrics.to_str(val_score))
             if val_score['Mean IoU'] > best_score:  # save best model
                 best_score = val_score['Mean IoU']
@@ -393,7 +434,7 @@ def main():
             model.eval()
             val_score, ret_samples = validate(
                 opts=opts, model=model, loader=val_loader, device=device, metrics=metrics,
-                ret_samples_ids=vis_sample_id, auto_cast=auto_cast)
+                ret_samples_ids=vis_sample_id, auto_cast=auto_cast, group_func=criterion.reduced_simplex)
             logger.info(metrics.to_str(val_score))
             logger.info("Training reaches its end.")
             model.train()

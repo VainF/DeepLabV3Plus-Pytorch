@@ -1,10 +1,13 @@
 import os
+import typing as t
 
 import numpy as np
 import torch
 import torch.nn as nn
+from torch import Tensor
+from torch.nn import functional as F
 from torchvision.transforms.functional import normalize
-import typing as t
+
 from utils.logger import logger
 
 
@@ -63,3 +66,19 @@ def save_ckpt(cur_itrs, path, *, model, optimizer, scheduler, best_score, scaler
 
 def get_lrs_from_optimizer(optimizer) -> t.List[float]:
     return [group["lr"] for group in optimizer.param_groups]
+
+
+def class2one_hot(seg: Tensor, C, class_dim: int = 1) -> Tensor:
+    return F.one_hot(seg, C).moveaxis(-1, class_dim)
+
+
+def grouper(array_list, group_num):
+    num_samples = len(array_list) // group_num
+    batch = []
+    for item in array_list:
+        if len(batch) == num_samples:
+            yield batch
+            batch = []
+        batch.append(item)
+    if len(batch) > 0:
+        yield batch
