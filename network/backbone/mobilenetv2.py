@@ -1,5 +1,8 @@
 from torch import nn
-from torchvision.models.utils import load_state_dict_from_url
+try: # for torchvision<0.4
+    from torchvision.models.utils import load_state_dict_from_url
+except: # for torchvision>=0.4
+    from torch.hub import load_state_dict_from_url
 import torch.nn.functional as F
 
 __all__ = ['MobileNetV2', 'mobilenet_v2']
