@@ -3,6 +3,7 @@ VOCdevkit
 checkpoints
 .vscode
 *.pyc
+.idea/
 __pycache__
 results
 checkpoints_bak
