@@ -6,14 +6,15 @@ import os
 __all__ = ['HRNet', 'hrnetv2_48', 'hrnetv2_32']
 
 # Checkpoint path of pre-trained backbone (edit to your path). Download backbone pretrained model hrnetv2-32 @
-# https://drive.google.com/file/d/1NxCK7Zgn5PmeS7W1jYLt5J9E0RRZ2oyF/view?usp=sharing Personally, I added the backbone
-# weights to the folder /checkpoints HRNetv2-48 not available yet.
+# https://drive.google.com/file/d/1NxCK7Zgn5PmeS7W1jYLt5J9E0RRZ2oyF/view?usp=sharing .Personally, I added the backbone
+# weights to the folder /checkpoints
 try:
     CKPT_PATH = './checkpoints/hrnetv2_32_model_best_epoch96.pth'
     print(f"Backbone HRNET Pretrained weights at: {CKPT_PATH}")
 except:
     print("No backbone checkpoint found for HRNetv2, please set pretrained=False when calling model")
 
+# HRNetv2-48 not available yet, if you want to use it, you have to set pretrained_backbone=False when calling the model.
 
 class Bottleneck(nn.Module):
     expansion = 4
