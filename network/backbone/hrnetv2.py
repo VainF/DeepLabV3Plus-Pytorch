@@ -10,11 +10,11 @@ __all__ = ['HRNet', 'hrnetv2_48', 'hrnetv2_32']
 # weights to the folder /checkpoints
 try:
     CKPT_PATH = './checkpoints/hrnetv2_32_model_best_epoch96.pth'
-    print(f"Backbone HRNET Pretrained weights at: {CKPT_PATH}")
+    print(f"Backbone HRNet Pretrained weights at: {CKPT_PATH}, only usable for HRNetv2-32")
 except:
     print("No backbone checkpoint found for HRNetv2, please set pretrained=False when calling model")
 
-# HRNetv2-48 not available yet, if you want to use it, you have to set pretrained_backbone=False when calling the model.
+# HRNetv2-48 not available yet, but you can train the whole model from scratch.
 
 class Bottleneck(nn.Module):
     expansion = 4
