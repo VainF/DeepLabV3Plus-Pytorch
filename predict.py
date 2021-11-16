@@ -30,10 +30,13 @@ def get_argparser():
                         choices=['voc', 'cityscapes'], help='Name of training set')
 
     # Deeplab Options
+    available_models = sorted(name for name in network.modeling.__dict__ if name.islower() and \
+                              not (name.startswith("__") or name.startswith('_')) and callable(
+                              network.modeling.__dict__[name])
+                              )
+
     parser.add_argument("--model", type=str, default='deeplabv3plus_mobilenet',
-                        choices=['deeplabv3_resnet50',  'deeplabv3plus_resnet50',
-                                 'deeplabv3_resnet101', 'deeplabv3plus_resnet101',
-                                 'deeplabv3_mobilenet', 'deeplabv3plus_mobilenet'], help='model name')
+                        choices=available_models, help='model name')
     parser.add_argument("--separable_conv", action='store_true', default=False,
                         help="apply separable conv to decoder and aspp")
     parser.add_argument("--output_stride", type=int, default=16, choices=[8, 16])
@@ -78,17 +81,8 @@ def main():
     elif os.path.isfile(opts.input):
         image_files.append(opts.input)
     
-    # Set up model
-    model_map = {
-        'deeplabv3_resnet50': network.deeplabv3_resnet50,
-        'deeplabv3plus_resnet50': network.deeplabv3plus_resnet50,
-        'deeplabv3_resnet101': network.deeplabv3_resnet101,
-        'deeplabv3plus_resnet101': network.deeplabv3plus_resnet101,
-        'deeplabv3_mobilenet': network.deeplabv3_mobilenet,
-        'deeplabv3plus_mobilenet': network.deeplabv3plus_mobilenet
-    }
-
-    model = model_map[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
+    # Set up model (all models are 'constructed at network.modeling)
+    model = network.modeling.__dict__[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
     if opts.separable_conv and 'plus' in opts.model:
         network.convert_to_separable_conv(model.classifier)
     utils.set_bn_momentum(model.backbone, momentum=0.01)

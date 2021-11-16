@@ -1,0 +1,24 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="11">
+            <item index="0" class="java.lang.String" itemvalue="pandas" />
+            <item index="1" class="java.lang.String" itemvalue="pyyaml" />
+            <item index="2" class="java.lang.String" itemvalue="json_tricks" />
+            <item index="3" class="java.lang.String" itemvalue="scikit-image" />
+            <item index="4" class="java.lang.String" itemvalue="yacs" />
+            <item index="5" class="java.lang.String" itemvalue="shapely" />
+            <item index="6" class="java.lang.String" itemvalue="scipy" />
+            <item index="7" class="java.lang.String" itemvalue="opencv-python" />
+            <item index="8" class="java.lang.String" itemvalue="tensorboardX" />
+            <item index="9" class="java.lang.String" itemvalue="EasyDict" />
+            <item index="10" class="java.lang.String" itemvalue="Cython" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
