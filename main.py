@@ -243,17 +243,8 @@ def main():
     print("Dataset: %s, Train set: %d, Val set: %d" %
           (opts.dataset, len(train_dst), len(val_dst)))
 
-    # Set up model
-    model_map = {
-        'deeplabv3_resnet50': network.deeplabv3_resnet50,
-        'deeplabv3plus_resnet50': network.deeplabv3plus_resnet50,
-        'deeplabv3_resnet101': network.deeplabv3_resnet101,
-        'deeplabv3plus_resnet101': network.deeplabv3plus_resnet101,
-        'deeplabv3_mobilenet': network.deeplabv3_mobilenet,
-        'deeplabv3plus_mobilenet': network.deeplabv3plus_mobilenet
-    }
-
-    model = model_map[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
+    # Set up model (all models are 'constructed at network.modeling)
+    model = network.modeling.__dict__[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
     if opts.separable_conv and 'plus' in opts.model:
         network.convert_to_separable_conv(model.classifier)
     utils.set_bn_momentum(model.backbone, momentum=0.01)
