@@ -17,6 +17,8 @@ Specify the model architecture with '--model ARCH_NAME' and set the output strid
 
 All pretrained models: [Dropbox](https://www.dropbox.com/sh/w3z9z8lqpi8b2w7/AAB0vkl4F5vy6HdIhmRCTKHSa?dl=0), [Tencent Weiyun](https://share.weiyun.com/qqx78Pv5)
 
+Note: HRNet backbone was contributed by @timothylimyl. A pre-trained backbone is available at [google drive](https://drive.google.com/file/d/1NxCK7Zgn5PmeS7W1jYLt5J9E0RRZ2oyF/view?usp=sharing).
+
 ### 2. Load the pretrained model:
 ```python
 model.load_state_dict( torch.load( CKPT_PATH )['model_state']  )
