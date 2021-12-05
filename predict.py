@@ -75,7 +75,7 @@ def main():
     image_files = []
     if os.path.isdir(opts.input):
         for ext in ['png', 'jpeg', 'jpg', 'JPEG']:
-            files = glob(os.path.join(opts.input, '**/*.png'), recursive=True)
+            files = glob(os.path.join(opts.input, '**/*.%s'%(ext)), recursive=True)
             if len(files)>0:
                 image_files.extend(files)
     elif os.path.isfile(opts.input):
