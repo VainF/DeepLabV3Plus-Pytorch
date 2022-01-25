@@ -55,9 +55,9 @@ def get_argparser():
     parser.add_argument("--step_size", type=int, default=10000)
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='crop validation (default: False)')
-    parser.add_argument("--batch_size", type=int, default=2, #16 default
+    parser.add_argument("--batch_size", type=int, default=8, #16 default
                         help='batch size (default: 16)')
-    parser.add_argument("--val_batch_size", type=int, default=1,
+    parser.add_argument("--val_batch_size", type=int, default=4,
                         help='batch size for validation (default: 4)')
     parser.add_argument("--crop_size", type=int, default=769)
 
@@ -102,8 +102,8 @@ def get_dataset(opts):
     if opts.dataset == 'cityscapes':
         train_transform = et.ExtCompose([
             # et.ExtResize( 512 ),
-            et.ExtRandomScale((0.75, 1.0, 1.25, 1.5, 1.75, 2)),
             et.ExtRandomCrop(size=(opts.crop_size, opts.crop_size)),
+            #  et.ExtRandomScale((0.75, 1.0, 1.25, 1.5, 1.75, 2)),
             # et.ExtColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
             et.ExtRandomHorizontalFlip(),
             et.ExtToTensor(),
@@ -184,7 +184,7 @@ def main():
     if opts.dataset.lower() == 'voc':
         opts.num_classes = 21
     elif opts.dataset.lower() == 'cityscapes':
-        opts.num_classes = 14
+        opts.num_classes = 19
 
     # Setup visualization
     vis = Visualizer(port=opts.vis_port,
@@ -207,10 +207,10 @@ def main():
 
     train_dst, val_dst = get_dataset(opts)
     train_loader = data.DataLoader(
-        train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=4,
+        train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=2,
         drop_last=True)  # drop_last=True to ignore single-image batches.
     val_loader = data.DataLoader(
-        val_dst, batch_size=opts.val_batch_size, shuffle=True, num_workers=4)
+        val_dst, batch_size=opts.val_batch_size, shuffle=True, num_workers=2)
     print("Dataset: %s, Train set: %d, Val set: %d" %
           (opts.dataset, len(train_dst), len(val_dst)))
 

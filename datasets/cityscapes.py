@@ -48,16 +48,19 @@ class Cityscapes(data.Dataset):
         CityscapesClass('terrain',              22, 9, 'nature', 4, False, False, (152, 251, 152)),
         CityscapesClass('sky',                  23, 10, 'sky', 5, False, False, (70, 130, 180)),
         CityscapesClass('person',               24, 11, 'human', 6, True, False, (220, 20, 60)),
-        CityscapesClass('rider',                25, 11, 'human', 6, True, False, (220, 20, 60)),
-        CityscapesClass('car',                  26, 12, 'vehicle', 7, True, False, (0, 0, 142)),
-        CityscapesClass('truck',                27, 12, 'vehicle', 7, True, False, (0, 0, 142)),
-        CityscapesClass('bus',                  28, 12, 'vehicle', 7, True, False, (0, 0, 142)),
+        CityscapesClass('rider',                25, 12, 'human', 6, True, False, (220, 20, 60)),
+        CityscapesClass('car',                  26, 13, 'vehicle', 7, True, False, (0, 0, 142)),
+        CityscapesClass('truck',                27, 14, 'vehicle', 7, True, False, (0, 0, 142)),
+        CityscapesClass('bus',                  28, 15, 'vehicle', 7, True, False, (0, 0, 142)),
         CityscapesClass('caravan',              29, 255, 'vehicle', 7, True, True, (0, 0, 90)),
         CityscapesClass('trailer',              30, 255, 'vehicle', 7, True, True, (0, 0, 110)),
         CityscapesClass('train',                31, 255, 'vehicle', 7, True, False, (0, 80, 100)),
-        CityscapesClass('motorcycle',           32, 13, 'vehicle', 7, True, False, (0, 0, 230)),
-        CityscapesClass('bicycle',              33, 13, 'vehicle', 7, True, False, (0, 0, 230)),
+        CityscapesClass('motorcycle',           32, 16, 'vehicle', 7, True, False, (0, 0, 230)),
+        CityscapesClass('bicycle',              33, 17, 'vehicle', 7, True, False, (0, 0, 230)),
+        CityscapesClass('roadmark',             34, 255, 'vehicle', 7, True, False, (0, 0, 0)),
+        CityscapesClass('busstop',              35, 18, 'vehicle', 7, False, True, (211, 211, 211)),
         CityscapesClass('license plate',        -1, 255, 'vehicle', 7, False, True, (0, 0, 142)),
+
     ]
 
     train_id_to_color = [c.color for c in classes if (c.train_id != -1 and c.train_id != 255)]
@@ -72,6 +75,7 @@ class Cityscapes(data.Dataset):
     #id_to_train_id = np.array([c.category_id for c in classes], dtype='uint8') - 1
 
     def __init__(self, root, split='train', mode='fine', target_type='semantic', transform=None):
+
         self.root = os.path.expanduser(root)
         self.mode = 'gtFine'
         self.target_type = target_type
@@ -96,11 +100,18 @@ class Cityscapes(data.Dataset):
             img_dir = os.path.join(self.images_dir, city)
             target_dir = os.path.join(self.targets_dir, city)
 
-            for file_name in os.listdir(img_dir):
-                self.images.append(os.path.join(img_dir, file_name))
-                target_name = '{}_{}'.format(file_name.split('_leftImg8bit')[0],
-                                             self._get_target_suffix(self.mode, self.target_type))
-                self.targets.append(os.path.join(target_dir, target_name))
+            if city.find('vtd') != -1:
+                for file_name in os.listdir(img_dir):
+                    self.images.append(os.path.join(img_dir, file_name))
+                    target_name = file_name
+                    # print(target_name)
+                    self.targets.append(os.path.join(target_dir, target_name))
+            else:
+                for file_name in os.listdir(img_dir):
+                    self.images.append(os.path.join(img_dir, file_name))
+                    target_name = '{}_{}'.format(file_name.split('_leftImg8bit')[0],
+                                                self._get_target_suffix(self.mode, self.target_type))
+                    self.targets.append(os.path.join(target_dir, target_name))
 
     @classmethod
     def encode_target(cls, target):
@@ -108,7 +119,7 @@ class Cityscapes(data.Dataset):
 
     @classmethod
     def decode_target(cls, target):
-        target[target == 255] = 14
+        target[target == 255] = 19
         #target = target.astype('uint8') + 1
         return cls.train_id_to_color[target]
 
