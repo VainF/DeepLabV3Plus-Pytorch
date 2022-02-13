@@ -121,7 +121,8 @@ def main():
     with torch.no_grad():
         model = model.eval()
         for img_path in tqdm(image_files):
-            img_name = os.path.basename(img_path).split('.')[0]
+            ext = os.path.basename(img_path).split('.')[-1]
+            img_name = os.path.basename(img_path)[:-len(ext)-1]
             img = Image.open(img_path).convert('RGB')
             img = transform(img).unsqueeze(0) # To tensor of NCHW
             img = img.to(device)
