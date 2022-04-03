@@ -134,11 +134,13 @@ class ASPP(nn.Module):
     def __init__(self, in_channels, atrous_rates):
         super(ASPP, self).__init__()
         out_channels = 256
-        modules = []
-        modules.append(nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 1, bias=False),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)))
+        modules = [
+            nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, 1, bias=False),
+                nn.BatchNorm2d(out_channels),
+                nn.ReLU(inplace=True),
+            )
+        ]
 
         rate1, rate2, rate3 = tuple(atrous_rates)
         modules.append(ASPPConv(in_channels, out_channels, rate1))
@@ -155,9 +157,7 @@ class ASPP(nn.Module):
             nn.Dropout(0.1),)
 
     def forward(self, x):
-        res = []
-        for conv in self.convs:
-            res.append(conv(x))
+        res = [conv(x) for conv in self.convs]
         res = torch.cat(res, dim=1)
         return self.project(res)
 

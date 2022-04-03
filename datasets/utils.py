@@ -38,9 +38,7 @@ def makedir_exist_ok(dirpath):
     try:
         os.makedirs(dirpath)
     except OSError as e:
-        if e.errno == errno.EEXIST:
-            pass
-        else:
+        if e.errno != errno.EEXIST:
             raise
 
 
@@ -63,10 +61,10 @@ def download_url(url, root, filename=None, md5=None):
 
     # downloads file
     if os.path.isfile(fpath) and check_integrity(fpath, md5):
-        print('Using downloaded and verified file: ' + fpath)
+        print(f'Using downloaded and verified file: {fpath}')
     else:
         try:
-            print('Downloading ' + url + ' to ' + fpath)
+            print(f'Downloading {url} to {fpath}')
             urllib.request.urlretrieve(
                 url, fpath,
                 reporthook=gen_bar_updater(tqdm(unit='B', unit_scale=True))

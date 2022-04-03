@@ -76,10 +76,7 @@ class InvertedResidual(nn.Module):
 
     def forward(self, x):
         x_pad = F.pad(x, self.input_padding)
-        if self.use_res_connect:
-            return x + self.conv(x_pad)
-        else:
-            return self.conv(x_pad)
+        return x + self.conv(x_pad) if self.use_res_connect else self.conv(x_pad)
 
 class MobileNetV2(nn.Module):
     def __init__(self, num_classes=1000, output_stride=8, width_mult=1.0, inverted_residual_setting=None, round_nearest=8):
@@ -95,10 +92,7 @@ class MobileNetV2(nn.Module):
         """
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
-        input_channel = 32
-        last_channel = 1280
         self.output_stride = output_stride
-        current_stride = 1
         if inverted_residual_setting is None:
             inverted_residual_setting = [
                 # t, c, n, s
@@ -113,14 +107,18 @@ class MobileNetV2(nn.Module):
 
         # only check the first element, assuming user knows t,c,n,s are required
         if len(inverted_residual_setting) == 0 or len(inverted_residual_setting[0]) != 4:
-            raise ValueError("inverted_residual_setting should be non-empty "
-                             "or a 4-element list, got {}".format(inverted_residual_setting))
+            raise ValueError(
+                f"inverted_residual_setting should be non-empty or a 4-element list, got {inverted_residual_setting}"
+            )
 
+
+        input_channel = 32
         # building first layer
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
+        last_channel = 1280
         self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
         features = [ConvBNReLU(3, input_channel, stride=2)]
-        current_stride *= 2
+        current_stride = 1 * 2
         dilation=1
         previous_dilation = 1
 

@@ -29,12 +29,10 @@ class ExtRandomHorizontalFlip(object):
         Returns:
             PIL Image: Randomly flipped image.
         """
-        if random.random() < self.p:
-            return F.hflip(img), F.hflip(lbl)
-        return img, lbl
+        return (F.hflip(img), F.hflip(lbl)) if random.random() < self.p else (img, lbl)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + f'(p={self.p})'
 
 
 
@@ -58,7 +56,7 @@ class ExtCompose(object):
         return img, lbl
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+        format_string = f'{self.__class__.__name__}('
         for t in self.transforms:
             format_string += '\n'
             format_string += '    {0}'.format(t)
@@ -170,11 +168,11 @@ class ExtRandomRotation(object):
             if degrees < 0:
                 raise ValueError("If degrees is a single number, it must be positive.")
             self.degrees = (-degrees, degrees)
-        else:
-            if len(degrees) != 2:
-                raise ValueError("If degrees is a sequence, it must be of len 2.")
+        elif len(degrees) == 2:
             self.degrees = degrees
 
+        else:
+            raise ValueError("If degrees is a sequence, it must be of len 2.")
         self.resample = resample
         self.expand = expand
         self.center = center
@@ -185,9 +183,7 @@ class ExtRandomRotation(object):
         Returns:
             sequence: params to be passed to ``rotate`` for random rotation.
         """
-        angle = random.uniform(degrees[0], degrees[1])
-
-        return angle
+        return random.uniform(degrees[0], degrees[1])
 
     def __call__(self, img, lbl):
         """
@@ -227,12 +223,10 @@ class ExtRandomHorizontalFlip(object):
         Returns:
             PIL Image: Randomly flipped image.
         """
-        if random.random() < self.p:
-            return F.hflip(img), F.hflip(lbl)
-        return img, lbl
+        return (F.hflip(img), F.hflip(lbl)) if random.random() < self.p else (img, lbl)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + f'(p={self.p})'
 
 
 class ExtRandomVerticalFlip(object):
@@ -253,12 +247,10 @@ class ExtRandomVerticalFlip(object):
             PIL Image: Randomly flipped image.
             PIL Image: Randomly flipped label.
         """
-        if random.random() < self.p:
-            return F.vflip(img), F.vflip(lbl)
-        return img, lbl
+        return (F.vflip(img), F.vflip(lbl)) if random.random() < self.p else (img, lbl)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + f'(p={self.p})'
 
 class ExtPad(object):
     def __init__(self, diviser=32):
@@ -295,7 +287,7 @@ class ExtToTensor(object):
             return torch.from_numpy( np.array( pic, dtype=np.float32).transpose(2, 0, 1) ), torch.from_numpy( np.array( lbl, dtype=self.target_type) )
 
     def __repr__(self):
-        return self.__class__.__name__ + '()'
+        return f'{self.__class__.__name__}()'
 
 class ExtNormalize(object):
     """Normalize a tensor image with mean and standard deviation.
@@ -375,7 +367,10 @@ class ExtRandomCrop(object):
             PIL Image: Cropped image.
             PIL Image: Cropped label.
         """
-        assert img.size == lbl.size, 'size of img and lbl should be the same. %s, %s'%(img.size, lbl.size)
+        assert (
+            img.size == lbl.size
+        ), f'size of img and lbl should be the same. {img.size}, {lbl.size}'
+
         if self.padding > 0:
             img = F.pad(img, self.padding)
             lbl = F.pad(lbl, self.padding)
@@ -455,15 +450,18 @@ class ExtColorJitter(object):
     def _check_input(self, value, name, center=1, bound=(0, float('inf')), clip_first_on_zero=True):
         if isinstance(value, numbers.Number):
             if value < 0:
-                raise ValueError("If {} is a single number, it must be non negative.".format(name))
+                raise ValueError(f"If {name} is a single number, it must be non negative.")
             value = [center - value, center + value]
             if clip_first_on_zero:
                 value[0] = max(value[0], 0)
         elif isinstance(value, (tuple, list)) and len(value) == 2:
             if not bound[0] <= value[0] <= value[1] <= bound[1]:
-                raise ValueError("{} values should be between {}".format(name, bound))
+                raise ValueError(f"{name} values should be between {bound}")
         else:
-            raise TypeError("{} should be a single number or a list/tuple with lenght 2.".format(name))
+            raise TypeError(
+                f"{name} should be a single number or a list/tuple with lenght 2."
+            )
+
 
         # if value is 0 or (1., 1.) for brightness/contrast/saturation
         # or (0., 0.) for hue, do nothing
@@ -500,9 +498,7 @@ class ExtColorJitter(object):
             transforms.append(Lambda(lambda img: F.adjust_hue(img, hue_factor)))
 
         random.shuffle(transforms)
-        transform = Compose(transforms)
-
-        return transform
+        return Compose(transforms)
 
     def __call__(self, img, lbl):
         """
@@ -517,7 +513,7 @@ class ExtColorJitter(object):
         return transform(img), lbl
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+        format_string = f'{self.__class__.__name__}('
         format_string += 'brightness={0}'.format(self.brightness)
         format_string += ', contrast={0}'.format(self.contrast)
         format_string += ', saturation={0}'.format(self.saturation)
@@ -539,7 +535,7 @@ class Lambda(object):
         return self.lambd(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '()'
+        return f'{self.__class__.__name__}()'
 
 
 class Compose(object):
@@ -564,7 +560,7 @@ class Compose(object):
         return img
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+        format_string = f'{self.__class__.__name__}('
         for t in self.transforms:
             format_string += '\n'
             format_string += '    {0}'.format(t)

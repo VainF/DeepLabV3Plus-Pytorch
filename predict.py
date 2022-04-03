@@ -30,10 +30,15 @@ def get_argparser():
                         choices=['voc', 'cityscapes'], help='Name of training set')
 
     # Deeplab Options
-    available_models = sorted(name for name in network.modeling.__dict__ if name.islower() and \
-                              not (name.startswith("__") or name.startswith('_')) and callable(
-                              network.modeling.__dict__[name])
-                              )
+    available_models = sorted(
+        name
+        for name in network.modeling.__dict__
+        if name.islower()
+        and not name.startswith("__")
+        and not name.startswith('_')
+        and callable(network.modeling.__dict__[name])
+    )
+
 
     parser.add_argument("--model", type=str, default='deeplabv3plus_mobilenet',
                         choices=available_models, help='model name')
@@ -51,7 +56,7 @@ def get_argparser():
                         help='batch size for validation (default: 4)')
     parser.add_argument("--crop_size", type=int, default=513)
 
-    
+
     parser.add_argument("--ckpt", default=None, type=str,
                         help="resume from checkpoint")
     parser.add_argument("--gpu_id", type=str, default='0',
@@ -69,31 +74,31 @@ def main():
 
     os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print("Device: %s" % device)
+    print(f"Device: {device}")
 
     # Setup dataloader
     image_files = []
     if os.path.isdir(opts.input):
         for ext in ['png', 'jpeg', 'jpg', 'JPEG']:
-            files = glob(os.path.join(opts.input, '**/*.%s'%(ext)), recursive=True)
+            files = glob(os.path.join(opts.input, f'**/*.{ext}'), recursive=True)
             if len(files)>0:
                 image_files.extend(files)
     elif os.path.isfile(opts.input):
         image_files.append(opts.input)
-    
+
     # Set up model (all models are 'constructed at network.modeling)
     model = network.modeling.__dict__[opts.model](num_classes=opts.num_classes, output_stride=opts.output_stride)
     if opts.separable_conv and 'plus' in opts.model:
         network.convert_to_separable_conv(model.classifier)
     utils.set_bn_momentum(model.backbone, momentum=0.01)
-    
+
     if opts.ckpt is not None and os.path.isfile(opts.ckpt):
         # https://github.com/VainF/DeepLabV3Plus-Pytorch/issues/8#issuecomment-605601402, @PytaichukBohdan
         checkpoint = torch.load(opts.ckpt, map_location=torch.device('cpu'))
         model.load_state_dict(checkpoint["model_state"])
         model = nn.DataParallel(model)
         model.to(device)
-        print("Resume model from %s" % opts.ckpt)
+        print(f"Resume model from {opts.ckpt}")
         del checkpoint
     else:
         print("[!] Retrain")
@@ -126,7 +131,7 @@ def main():
             img = Image.open(img_path).convert('RGB')
             img = transform(img).unsqueeze(0) # To tensor of NCHW
             img = img.to(device)
-            
+
             pred = model(img).max(1)[1].cpu().numpy()[0] # HW
             colorized_preds = decode_fn(pred).astype('uint8')
             colorized_preds = Image.fromarray(colorized_preds)

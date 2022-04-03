@@ -56,7 +56,7 @@ class IntermediateLayerGetter(nn.ModuleDict):
         self.hrnet_flag = hrnet_flag
 
         orig_return_layers = return_layers
-        return_layers = {k: v for k, v in return_layers.items()}
+        return_layers = dict(return_layers.items())
         layers = OrderedDict()
         for name, module in model.named_children():
             layers[name] = module
@@ -87,7 +87,5 @@ class IntermediateLayerGetter(nn.ModuleDict):
                     x2 = F.interpolate(x[2], size=(output_h, output_w), mode='bilinear', align_corners=False)
                     x3 = F.interpolate(x[3], size=(output_h, output_w), mode='bilinear', align_corners=False)
                     x = torch.cat([x[0], x1, x2, x3], dim=1)
-                    out[out_name] = x
-                else:
-                    out[out_name] = x
+                out[out_name] = x
         return out

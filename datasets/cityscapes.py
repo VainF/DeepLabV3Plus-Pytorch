@@ -90,15 +90,15 @@ class Cityscapes(data.Dataset):
         if not os.path.isdir(self.images_dir) or not os.path.isdir(self.targets_dir):
             raise RuntimeError('Dataset not found or incomplete. Please make sure all required folders for the'
                                ' specified "split" and "mode" are inside the "root" directory')
-        
+
         for city in os.listdir(self.images_dir):
             img_dir = os.path.join(self.images_dir, city)
             target_dir = os.path.join(self.targets_dir, city)
 
             for file_name in os.listdir(img_dir):
                 self.images.append(os.path.join(img_dir, file_name))
-                target_name = '{}_{}'.format(file_name.split('_leftImg8bit')[0],
-                                             self._get_target_suffix(self.mode, self.target_type))
+                target_name = f"{file_name.split('_leftImg8bit')[0]}_{self._get_target_suffix(self.mode, self.target_type)}"
+
                 self.targets.append(os.path.join(target_dir, target_name))
 
     @classmethod
@@ -135,13 +135,13 @@ class Cityscapes(data.Dataset):
         return data
 
     def _get_target_suffix(self, mode, target_type):
-        if target_type == 'instance':
-            return '{}_instanceIds.png'.format(mode)
-        elif target_type == 'semantic':
-            return '{}_labelIds.png'.format(mode)
-        elif target_type == 'color':
-            return '{}_color.png'.format(mode)
-        elif target_type == 'polygon':
-            return '{}_polygons.json'.format(mode)
+        if target_type == 'color':
+            return f'{mode}_color.png'
         elif target_type == 'depth':
-            return '{}_disparity.png'.format(mode)
+            return f'{mode}_disparity.png'
+        elif target_type == 'instance':
+            return f'{mode}_instanceIds.png'
+        elif target_type == 'polygon':
+            return f'{mode}_polygons.json'
+        elif target_type == 'semantic':
+            return f'{mode}_labelIds.png'
