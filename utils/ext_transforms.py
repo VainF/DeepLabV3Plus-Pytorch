@@ -1,7 +1,6 @@
 import collections
 import torchvision
 import torch
-import torchvision.transforms as T
 import torchvision.transforms.functional as F
 import random 
 import numbers
@@ -14,7 +13,6 @@ from PIL import Image
 #
 class ExtRandomHorizontalFlip(object):
     """Horizontally flip the given PIL Image randomly with a given probability.
-
     Args:
         p (float): probability of the image being flipped. Default value is 0.5
     """
@@ -26,7 +24,6 @@ class ExtRandomHorizontalFlip(object):
         """
         Args:
             img (PIL Image): Image to be flipped.
-
         Returns:
             PIL Image: Randomly flipped image.
         """
@@ -95,7 +92,7 @@ class ExtCenterCrop(object):
 
 
 class ExtRandomScale(object):
-    def __init__(self, scale_range, interpolation=T.InterpolationMode.BILINEAR):
+    def __init__(self, scale_range, interpolation=Image.BILINEAR):
         self.scale_range = scale_range
         self.interpolation = interpolation
 
@@ -111,7 +108,7 @@ class ExtRandomScale(object):
         assert img.size == lbl.size
         scale = random.uniform(self.scale_range[0], self.scale_range[1])
         target_size = ( int(img.size[1]*scale), int(img.size[0]*scale) )
-        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, T.InterpolationMode.NEAREST)
+        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, Image.NEAREST)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
@@ -122,10 +119,10 @@ class ExtScale(object):
     Args:
         Scale (sequence or int): scale factors
         interpolation (int, optional): Desired interpolation. Default is
-            ``PIL.T.InterpolationMode.BILINEAR``
+            ``PIL.Image.BILINEAR``
     """
 
-    def __init__(self, scale, interpolation=T.InterpolationMode.BILINEAR):
+    def __init__(self, scale, interpolation=Image.BILINEAR):
         self.scale = scale
         self.interpolation = interpolation
 
@@ -140,7 +137,7 @@ class ExtScale(object):
         """
         assert img.size == lbl.size
         target_size = ( int(img.size[1]*self.scale), int(img.size[0]*self.scale) ) # (H, W)
-        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, T.InterpolationMode.NEAREST)
+        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, Image.NEAREST)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
@@ -153,10 +150,10 @@ class ExtRandomRotation(object):
         degrees (sequence or float or int): Range of degrees to select from.
             If degrees is a number instead of sequence like (min, max), the range of degrees
             will be (-degrees, +degrees).
-        resample ({PIL.T.InterpolationMode.NEAREST, PIL.T.InterpolationMode.BILINEAR, PIL.Image.BICUBIC}, optional):
+        resample ({PIL.Image.NEAREST, PIL.Image.BILINEAR, PIL.Image.BICUBIC}, optional):
             An optional resampling filter.
             See http://pillow.readthedocs.io/en/3.4.x/handbook/concepts.html#filters
-            If omitted, or if the image has mode "1" or "P", it is set to PIL.T.InterpolationMode.NEAREST.
+            If omitted, or if the image has mode "1" or "P", it is set to PIL.Image.NEAREST.
         expand (bool, optional): Optional expansion flag.
             If true, expands the output to make it large enough to hold the entire rotated image.
             If false or omitted, make the output image the same size as the input image.
@@ -408,10 +405,10 @@ class ExtResize(object):
             i.e, if height > width, then image will be rescaled to
             (size * height / width, size)
         interpolation (int, optional): Desired interpolation. Default is
-            ``PIL.T.InterpolationMode.BILINEAR``
+            ``PIL.Image.BILINEAR``
     """
 
-    def __init__(self, size, interpolation=T.InterpolationMode.BILINEAR):
+    def __init__(self, size, interpolation=Image.BILINEAR):
         assert isinstance(size, int) or (isinstance(size, collections.Iterable) and len(size) == 2)
         self.size = size
         self.interpolation = interpolation
@@ -423,7 +420,7 @@ class ExtResize(object):
         Returns:
             PIL Image: Rescaled image.
         """
-        return F.resize(img, self.size, self.interpolation), F.resize(lbl, self.size, T.InterpolationMode.NEAREST)
+        return F.resize(img, self.size, self.interpolation), F.resize(lbl, self.size, Image.NEAREST)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
@@ -431,7 +428,6 @@ class ExtResize(object):
     
 class ExtColorJitter(object):
     """Randomly change the brightness, contrast and saturation of an image.
-
     Args:
         brightness (float or tuple of float (min, max)): How much to jitter brightness.
             brightness_factor is chosen uniformly from [max(0, 1 - brightness), 1 + brightness]
@@ -475,9 +471,7 @@ class ExtColorJitter(object):
     @staticmethod
     def get_params(brightness, contrast, saturation, hue):
         """Get a randomized transform to be applied on image.
-
         Arguments are same as that of __init__.
-
         Returns:
             Transform which randomly adjusts brightness, contrast and
             saturation in a random order.
@@ -509,7 +503,6 @@ class ExtColorJitter(object):
         """
         Args:
             img (PIL Image): Input image.
-
         Returns:
             PIL Image: Color jittered image.
         """
@@ -527,7 +520,6 @@ class ExtColorJitter(object):
 
 class Lambda(object):
     """Apply a user-defined lambda as a transform.
-
     Args:
         lambd (function): Lambda/function to be used for transform.
     """
@@ -545,10 +537,8 @@ class Lambda(object):
 
 class Compose(object):
     """Composes several transforms together.
-
     Args:
         transforms (list of ``Transform`` objects): list of transforms to compose.
-
     Example:
         >>> transforms.Compose([
         >>>     transforms.CenterCrop(10),
