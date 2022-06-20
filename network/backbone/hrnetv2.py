@@ -8,13 +8,22 @@ __all__ = ['HRNet', 'hrnetv2_48', 'hrnetv2_32']
 # Checkpoint path of pre-trained backbone (edit to your path). Download backbone pretrained model hrnetv2-32 @
 # https://drive.google.com/file/d/1NxCK7Zgn5PmeS7W1jYLt5J9E0RRZ2oyF/view?usp=sharing .Personally, I added the backbone
 # weights to the folder /checkpoints
-try:
-    CKPT_PATH = './checkpoints/hrnetv2_32_model_best_epoch96.pth'
-    print(f"Backbone HRNet Pretrained weights at: {CKPT_PATH}, only usable for HRNetv2-32")
-except:
-    print("No backbone checkpoint found for HRNetv2, please set pretrained=False when calling model")
 
-# HRNetv2-48 not available yet, but you can train the whole model from scratch.
+model_urls = {
+    'hrnetv2_32': './checkpoints/model_best_epoch96_edit.pth',
+    'hrnetv2_48': None
+}
+
+
+def check_pth(arch):
+    CKPT_PATH = model_urls[arch]
+    if os.path.exists(CKPT_PATH):
+        print(f"Backbone HRNet Pretrained weights at: {CKPT_PATH}, only usable for HRNetv2-32")
+    else:
+        print("No backbone checkpoint found for HRNetv2, please set pretrained=False when calling model")
+    return CKPT_PATH
+    # HRNetv2-48 not available yet, but you can train the whole model from scratch.
+
 
 class Bottleneck(nn.Module):
     expansion = 4
@@ -284,7 +293,7 @@ class HRNet(nn.Module):
 def _hrnet(arch, channels, num_blocks, pretrained, progress, **kwargs):
     model = HRNet(channels, num_blocks, **kwargs)
     if pretrained:
-        print("Loading pretrained backbone HRNetV2 model .....")
+        CKPT_PATH = check_pth(arch)
         checkpoint = torch.load(CKPT_PATH)
         model.load_state_dict(checkpoint['state_dict'])
     return model
