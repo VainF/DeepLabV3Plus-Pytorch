@@ -34,7 +34,7 @@ colorized_preds = Image.fromarray(colorized_preds[0]) # to PIL Image
 
 ### 4. Atrous Separable Convolution
 
-**Note**: pre-trained models in this repo **do not** use Seperable Conv.
+**Note**: All pre-trained models in this repo were trained without atrous separable convolution.
 
 Atrous Separable Convolution is supported in this repo. We provide a simple tool ``network.convert_to_separable_conv`` to convert ``nn.Conv2d`` to ``AtrousSeparableConvolution``. **Please run main.py with '--separable_conv' if it is required**. See 'main.py' and 'network/_deeplab.py' for more details. 
 
