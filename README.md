@@ -1,6 +1,6 @@
 # DeepLabv3Plus-Pytorch
 
-DeepLabv3, DeepLabv3+ with pretrained models for Pascal VOC & Cityscapes.
+Pretrained DeepLabv3, DeepLabv3+ for Pascal VOC & Cityscapes.
 
 ## Quick Start 
 
@@ -49,6 +49,10 @@ Image folder:
 ```bash
 python predict.py --input datasets/data/cityscapes/leftImg8bit/train/bremen  --dataset cityscapes --model deeplabv3plus_mobilenet --ckpt checkpoints/best_deeplabv3plus_mobilenet_cityscapes_os16.pth --save_val_results_to test_results
 ```
+
+### 6. New backbones
+
+Please refer to [this commit (Xception)](https://github.com/VainF/DeepLabV3Plus-Pytorch/commit/c4b51e435e32b0deba5fc7c8ff106293df90590d) for more detials about adding new backbones.
 
 ## Results
 
