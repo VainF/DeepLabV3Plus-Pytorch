@@ -14,6 +14,7 @@ Specify the model architecture with '--model ARCH_NAME' and set the output strid
 |deeplabv3_mobilenet|deeplabv3plus_mobilenet ||
 |deeplabv3_hrnetv2_48 | deeplabv3plus_hrnetv2_48 |
 |deeplabv3_hrnetv2_32 | deeplabv3plus_hrnetv2_32 |
+|deeplabv3_xception | deeplabv3plus_xception |
 
 All pretrained models: [Dropbox](https://www.dropbox.com/sh/w3z9z8lqpi8b2w7/AAB0vkl4F5vy6HdIhmRCTKHSa?dl=0), [Tencent Weiyun](https://share.weiyun.com/qqx78Pv5)
 
