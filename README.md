@@ -52,7 +52,7 @@ python predict.py --input datasets/data/cityscapes/leftImg8bit/train/bremen  --d
 
 ### 6. New backbones
 
-Please refer to [this commit (Xception)](https://github.com/VainF/DeepLabV3Plus-Pytorch/commit/c4b51e435e32b0deba5fc7c8ff106293df90590d) for more detials about adding new backbones.
+Please refer to [this commit (Xception)](https://github.com/VainF/DeepLabV3Plus-Pytorch/commit/c4b51e435e32b0deba5fc7c8ff106293df90590d) for more details about how to add new backbones.
 
 ## Results
 
