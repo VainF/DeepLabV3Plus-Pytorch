@@ -8,7 +8,7 @@ import argparse
 import numpy as np
 
 from torch.utils import data
-from datasets import VOCSegmentation, Cityscapes, cityscapes
+from datasets import VOCSegmentation, Cityscapes, GenSegmentation
 from torchvision import transforms as T
 from metrics import StreamSegMetrics
 
@@ -26,8 +26,10 @@ def get_argparser():
     # Datset Options
     parser.add_argument("--input", type=str, required=True,
                         help="path to a single image or image directory")
-    parser.add_argument("--dataset", type=str, default='voc',
-                        choices=['voc', 'cityscapes'], help='Name of training set')
+    parser.add_argument("--dataset", type=str, default='gen_seg',
+                        choices=['voc', 'cityscapes', 'gen_seg'], help='Name of training set')
+    parser.add_argument("--num_classes", type=int, default=None,
+                        help="num classes (default: None)")
 
     # Deeplab Options
     available_models = sorted(name for name in network.modeling.__dict__ if name.islower() and \
@@ -56,19 +58,21 @@ def get_argparser():
                         help="resume from checkpoint")
     parser.add_argument("--gpu_id", type=str, default='0',
                         help="GPU ID")
+    parser.add_argument("--device", type=str, default='cuda',
+                        help="device")
     return parser
 
 def main():
     opts = get_argparser().parse_args()
-    if opts.dataset.lower() == 'voc':
-        opts.num_classes = 21
+    if opts.dataset.lower() == 'voc' :
         decode_fn = VOCSegmentation.decode_target
     elif opts.dataset.lower() == 'cityscapes':
-        opts.num_classes = 19
         decode_fn = Cityscapes.decode_target
+    elif opts.dataset.lower() == 'gen_seg':
+        decode_fn = GenSegmentation.decode_target
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
+    device = torch.device(opts.device)
     print("Device: %s" % device)
 
     # Setup dataloader
@@ -91,7 +95,7 @@ def main():
         # https://github.com/VainF/DeepLabV3Plus-Pytorch/issues/8#issuecomment-605601402, @PytaichukBohdan
         checkpoint = torch.load(opts.ckpt, map_location=torch.device('cpu'))
         model.load_state_dict(checkpoint["model_state"])
-        model = nn.DataParallel(model)
+        # model = nn.DataParallel(model)
         model.to(device)
         print("Resume model from %s" % opts.ckpt)
         del checkpoint
@@ -99,6 +103,7 @@ def main():
         print("[!] Retrain")
         model = nn.DataParallel(model)
         model.to(device)
+    print(device)
 
     #denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # denormalization for ori images
 
@@ -111,6 +116,7 @@ def main():
                                 std=[0.229, 0.224, 0.225]),
             ])
     else:
+        print('here')
         transform = T.Compose([
                 T.ToTensor(),
                 T.Normalize(mean=[0.485, 0.456, 0.406],
@@ -120,6 +126,7 @@ def main():
         os.makedirs(opts.save_val_results_to, exist_ok=True)
     with torch.no_grad():
         model = model.eval()
+        model.to(device)
         for img_path in tqdm(image_files):
             ext = os.path.basename(img_path).split('.')[-1]
             img_name = os.path.basename(img_path)[:-len(ext)-1]
