@@ -1,3 +1,4 @@
+from email.policy import strict
 from tqdm import tqdm
 import network
 import utils
@@ -7,7 +8,7 @@ import argparse
 import numpy as np
 
 from torch.utils import data
-from datasets import VOCSegmentation, Cityscapes
+from datasets import VOCSegmentation, Cityscapes, GenSegmentation
 from utils import ext_transforms as et
 from metrics import StreamSegMetrics
 
@@ -26,8 +27,8 @@ def get_argparser():
     # Datset Options
     parser.add_argument("--data_root", type=str, default='./datasets/data',
                         help="path to Dataset")
-    parser.add_argument("--dataset", type=str, default='voc',
-                        choices=['voc', 'cityscapes'], help='Name of dataset')
+    parser.add_argument("--dataset", type=str, default='gen_seg',
+                        choices=['voc', 'cityscapes', 'gen_seg'], help='Name of dataset')
     parser.add_argument("--num_classes", type=int, default=None,
                         help="num classes (default: None)")
 
@@ -126,11 +127,39 @@ def get_dataset(opts):
         train_dst = VOCSegmentation(root=opts.data_root, year=opts.year,
                                     image_set='train', download=opts.download, transform=train_transform)
         val_dst = VOCSegmentation(root=opts.data_root, year=opts.year,
-                                  image_set='val', download=False, transform=val_transform)
+                                  image_set='test', download=False, transform=val_transform)
+    if opts.dataset == 'gen_seg':
+        train_transform = et.ExtCompose([
+            et.ExtRandomScale((0.5, 2.0)),
+            et.ExtRandomCrop(size=(opts.crop_size, opts.crop_size), pad_if_needed=True),
+            et.ExtRandomHorizontalFlip(),
+            et.ExtToTensor(),
+            et.ExtNormalize(mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225]),
+        ])
+        if opts.crop_val:
+            val_transform = et.ExtCompose([
+                et.ExtResize(opts.crop_size),
+                et.ExtCenterCrop(opts.crop_size),
+                et.ExtToTensor(),
+                et.ExtNormalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+            ])
+        else:
+
+            val_transform = et.ExtCompose([
+                et.ExtToTensor(),
+                et.ExtNormalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+            ])
+        train_dst = GenSegmentation(root=opts.data_root,
+                                    image_set='train', transform=train_transform)
+        val_dst = GenSegmentation(root=opts.data_root, 
+                                  image_set='test', transform=val_transform)
+
 
     if opts.dataset == 'cityscapes':
         train_transform = et.ExtCompose([
-            # et.ExtResize( 512 ),
             et.ExtRandomCrop(size=(opts.crop_size, opts.crop_size)),
             et.ExtColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
             et.ExtRandomHorizontalFlip(),
@@ -140,7 +169,6 @@ def get_dataset(opts):
         ])
 
         val_transform = et.ExtCompose([
-            # et.ExtResize( 512 ),
             et.ExtToTensor(),
             et.ExtNormalize(mean=[0.485, 0.456, 0.406],
                             std=[0.229, 0.224, 0.225]),
@@ -165,7 +193,7 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
         img_id = 0
 
     with torch.no_grad():
-        for i, (images, labels) in tqdm(enumerate(loader)):
+        for i, (images, labels) in tqdm(enumerate(loader), total=len(loader)):
 
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
@@ -210,10 +238,6 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
 
 def main():
     opts = get_argparser().parse_args()
-    if opts.dataset.lower() == 'voc':
-        opts.num_classes = 21
-    elif opts.dataset.lower() == 'cityscapes':
-        opts.num_classes = 19
 
     # Setup visualization
     vis = Visualizer(port=opts.vis_port,
@@ -291,7 +315,14 @@ def main():
     if opts.ckpt is not None and os.path.isfile(opts.ckpt):
         # https://github.com/VainF/DeepLabV3Plus-Pytorch/issues/8#issuecomment-605601402, @PytaichukBohdan
         checkpoint = torch.load(opts.ckpt, map_location=torch.device('cpu'))
-        model.load_state_dict(checkpoint["model_state"])
+        state_dict = {}
+        for k, v in checkpoint["model_state"].items():
+            if v.size() != model.state_dict()[k].size():
+                state_dict[k] = v[:model.state_dict()[k].size()[0], ...]
+            else:
+                state_dict[k] = v
+
+        model.load_state_dict(state_dict)
         model = nn.DataParallel(model)
         model.to(device)
         if opts.continue_training:
