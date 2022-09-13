@@ -9,3 +9,7 @@ results
 checkpoints_bak
 cityscapes
 test_results
+images
+ignore_masks
+mask_gt
+predictions
