@@ -13,3 +13,4 @@ images
 ignore_masks
 mask_gt
 predictions
+exps
