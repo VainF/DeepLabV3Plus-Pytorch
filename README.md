@@ -22,8 +22,8 @@ Note: The HRNet backbone was contributed by @timothylimyl. A pre-trained backbon
 
 ### 2. Load the pretrained model:
 ```python
-model = 
-model.load_state_dict( torch.load( CKPT_PATH )['model_state']  )
+model = network.modeling.__dict__[MODEL_NAME](num_classes=NUM_CLASSES, output_stride=OUTPUT_SRTIDE)
+model.load_state_dict( torch.load( PATH_TO_PTH )['model_state']  )
 ```
 ### 3. Visualize segmentation outputs:
 ```python
