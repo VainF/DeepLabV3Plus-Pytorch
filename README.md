@@ -55,6 +55,21 @@ python predict.py --input datasets/data/cityscapes/leftImg8bit/train/bremen  --d
 
 Please refer to [this commit (Xception)](https://github.com/VainF/DeepLabV3Plus-Pytorch/commit/c4b51e435e32b0deba5fc7c8ff106293df90590d) for more details about how to add new backbones.
 
+### 7. New datasets
+
+You can train deeplab models on your own datasets. Your ``torch.utils.data.Dataset`` should provide the following class methods for visualization, just like the [Cityscapes Dataset](https://github.com/VainF/DeepLabV3Plus-Pytorch/blob/9d501682bca56d3b7c1f54c7b73ef99d8a7747d9/datasets/cityscapes.py#L105):
+```python
+@classmethod
+def encode_target(cls, target):
+    return cls.id_to_train_id[np.array(target)]
+
+@classmethod
+def decode_target(cls, target):
+    target[target == 255] = 19
+    return cls.train_id_to_color[target]
+```
+
+
 ## Results
 
 ### 1. Performance on Pascal VOC2012 Aug (21 classes, 513 x 513)
