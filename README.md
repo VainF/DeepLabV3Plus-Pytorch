@@ -57,16 +57,15 @@ Please refer to [this commit (Xception)](https://github.com/VainF/DeepLabV3Plus-
 
 ### 7. New datasets
 
-You can train deeplab models on your own datasets. Your ``torch.utils.data.Dataset`` should provide the following class methods for visualization, just like the [Cityscapes Dataset](https://github.com/VainF/DeepLabV3Plus-Pytorch/blob/9d501682bca56d3b7c1f54c7b73ef99d8a7747d9/datasets/cityscapes.py#L105):
+You can train deeplab models on your own datasets. Your ``torch.utils.data.Dataset`` should provide a decoding method that transforms your predictions to colorized images, just like the [VOC Dataset]([https://github.com/VainF/DeepLabV3Plus-Pytorch/blob/9d501682bca56d3b7c1f54c7b73ef99d8a7747d9/datasets/cityscapes.py#L105](https://github.com/VainF/DeepLabV3Plus-Pytorch/blob/bfe01d5fca5b6bb648e162d522eed1a9a8b324cb/datasets/voc.py#L156)):
 ```python
-@classmethod
-def encode_target(cls, target):
-    return cls.id_to_train_id[np.array(target)]
 
-@classmethod
-def decode_target(cls, target):
-    target[target == 255] = 19
-    return cls.train_id_to_color[target]
+class MyDataset(data.Dataset):
+    ...
+    @classmethod
+    def decode_target(cls, mask):
+        """decode semantic mask to RGB image"""
+        return cls.cmap[mask]
 ```
 
 
