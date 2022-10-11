@@ -57,7 +57,7 @@ Please refer to [this commit (Xception)](https://github.com/VainF/DeepLabV3Plus-
 
 ### 7. New datasets
 
-You can train deeplab models on your own datasets. Your ``torch.utils.data.Dataset`` should provide a decoding method that transforms your predictions to colorized images, just like the [VOC Dataset]([https://github.com/VainF/DeepLabV3Plus-Pytorch/blob/9d501682bca56d3b7c1f54c7b73ef99d8a7747d9/datasets/cityscapes.py#L105](https://github.com/VainF/DeepLabV3Plus-Pytorch/blob/bfe01d5fca5b6bb648e162d522eed1a9a8b324cb/datasets/voc.py#L156)):
+You can train deeplab models on your own datasets. Your ``torch.utils.data.Dataset`` should provide a decoding method that transforms your predictions to colorized images, just like the [VOC Dataset](https://github.com/VainF/DeepLabV3Plus-Pytorch/blob/bfe01d5fca5b6bb648e162d522eed1a9a8b324cb/datasets/voc.py#L156):
 ```python
 
 class MyDataset(data.Dataset):
