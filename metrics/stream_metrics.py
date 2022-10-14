@@ -48,11 +48,10 @@ class StreamSegMetrics(_StreamMetrics):
 
     def _fast_hist(self, label_true, label_pred):
         mask = (label_true >= 0) & (label_true < self.n_classes)
-        hist = np.bincount(
+        return np.bincount(
             self.n_classes * label_true[mask].astype(int) + label_pred[mask],
             minlength=self.n_classes ** 2,
         ).reshape(self.n_classes, self.n_classes)
-        return hist
 
     def get_results(self):
         """Returns accuracy score evaluation result.
@@ -85,7 +84,7 @@ class StreamSegMetrics(_StreamMetrics):
 class AverageMeter(object):
     """Computes average values"""
     def __init__(self):
-        self.book = dict()
+        self.book = {}
 
     def reset_all(self):
         self.book.clear()

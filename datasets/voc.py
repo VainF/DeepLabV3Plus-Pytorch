@@ -93,14 +93,14 @@ class VOCSegmentation(data.Dataset):
         if year=='2012_aug':
             is_aug = True
             year = '2012'
-        
+
         self.root = os.path.expanduser(root)
         self.year = year
         self.url = DATASET_YEAR_DICT[year]['url']
         self.filename = DATASET_YEAR_DICT[year]['filename']
         self.md5 = DATASET_YEAR_DICT[year]['md5']
         self.transform = transform
-        
+
         self.image_set = image_set
         base_dir = DATASET_YEAR_DICT[year]['base_dir']
         voc_root = os.path.join(self.root, base_dir)
@@ -112,7 +112,7 @@ class VOCSegmentation(data.Dataset):
         if not os.path.isdir(voc_root):
             raise RuntimeError('Dataset not found or corrupted.' +
                                ' You can use download=True to download it')
-        
+
         if is_aug and image_set=='train':
             mask_dir = os.path.join(voc_root, 'SegmentationClassAug')
             assert os.path.exists(mask_dir), "SegmentationClassAug not found, please refer to README.md and prepare it manually"
@@ -129,9 +129,9 @@ class VOCSegmentation(data.Dataset):
 
         with open(os.path.join(split_f), "r") as f:
             file_names = [x.strip() for x in f.readlines()]
-        
-        self.images = [os.path.join(image_dir, x + ".jpg") for x in file_names]
-        self.masks = [os.path.join(mask_dir, x + ".png") for x in file_names]
+
+        self.images = [os.path.join(image_dir, f'{x}.jpg') for x in file_names]
+        self.masks = [os.path.join(mask_dir, f'{x}.png') for x in file_names]
         assert (len(self.images) == len(self.masks))
 
     def __getitem__(self, index):

@@ -127,16 +127,28 @@ class StageModule(nn.Module):
                         nn.Upsample(scale_factor=(2.0 ** (branch_number - branch_output_number)), mode='nearest'),
                     ))
                 elif branch_number < branch_output_number:
-                    downsampling_fusion = []
-                    for _ in range(branch_output_number - branch_number - 1):
-                        downsampling_fusion.append(nn.Sequential(
-                            nn.Conv2d(c * (2 ** branch_number), c * (2 ** branch_number), kernel_size=3, stride=2,
-                                      padding=1,
-                                      bias=False),
-                            nn.BatchNorm2d(c * (2 ** branch_number), eps=1e-05, momentum=0.1, affine=True,
-                                           track_running_stats=True),
+                    downsampling_fusion = [
+                        nn.Sequential(
+                            nn.Conv2d(
+                                c * (2 ** branch_number),
+                                c * (2 ** branch_number),
+                                kernel_size=3,
+                                stride=2,
+                                padding=1,
+                                bias=False,
+                            ),
+                            nn.BatchNorm2d(
+                                c * (2 ** branch_number),
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True,
+                            ),
                             nn.ReLU(inplace=True),
-                        ))
+                        )
+                        for _ in range(branch_output_number - branch_number - 1)
+                    ]
+
                     downsampling_fusion.append(nn.Sequential(
                         nn.Conv2d(c * (2 ** branch_number), c * (2 ** branch_output_number), kernel_size=3,
                                   stride=2, padding=1,
@@ -233,15 +245,17 @@ class HRNet(nn.Module):
 
         # Classifier (extra module if want to use for classification):
         # pool, reduce dimensionality, flatten, connect to linear layer for classification:
-        out_channels = sum([c * 2 ** i for i in range(len(num_blocks)+1)])  # total output channels of HRNetV2
+        out_channels = sum(c * 2 ** i for i in range(len(num_blocks)+1))
         pool_feature_map = 8
         self.bn_classifier = nn.Sequential(
             nn.Conv2d(out_channels, out_channels // 4, kernel_size=1, bias=False),
-            nn.BatchNorm2d(out_channels // 4, eps=1e-05, affine=True, track_running_stats=True),
+            nn.BatchNorm2d(
+                out_channels // 4, eps=1e-05, affine=True, track_running_stats=True
+            ),
             nn.ReLU(inplace=True),
             nn.AdaptiveAvgPool2d(pool_feature_map),
             nn.Flatten(),
-            nn.Linear(pool_feature_map * pool_feature_map * (out_channels // 4), num_classes),
+            nn.Linear(pool_feature_map ** 2 * (out_channels // 4), num_classes),
         )
 
     @staticmethod

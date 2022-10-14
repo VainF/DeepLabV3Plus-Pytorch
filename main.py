@@ -32,10 +32,15 @@ def get_argparser():
                         help="num classes (default: None)")
 
     # Deeplab Options
-    available_models = sorted(name for name in network.modeling.__dict__ if name.islower() and \
-                              not (name.startswith("__") or name.startswith('_')) and callable(
-                              network.modeling.__dict__[name])
-                              )
+    available_models = sorted(
+        name
+        for name in network.modeling.__dict__
+        if name.islower()
+        and not name.startswith("__")
+        and not name.startswith('_')
+        and callable(network.modeling.__dict__[name])
+    )
+
     parser.add_argument("--model", type=str, default='deeplabv3plus_mobilenet',
                         choices=available_models, help='model name')
     parser.add_argument("--separable_conv", action='store_true', default=False,
@@ -281,7 +286,7 @@ def main():
             "scheduler_state": scheduler.state_dict(),
             "best_score": best_score,
         }, path)
-        print("Model saved as %s" % path)
+        print(f"Model saved as {path}")
 
     utils.mkdir('checkpoints')
     # Restore

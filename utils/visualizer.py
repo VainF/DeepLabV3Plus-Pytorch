@@ -20,9 +20,9 @@ class Visualizer(object):
             x = [x]
         if not isinstance(y, list):
             y = [y]
-        
+
         if self.id is not None:
-            name = "[%s]"%self.id + name
+            name = f"[{self.id}]" + name
         default_opts = { 'title': name }
         if opts is not None:
             default_opts.update(opts)
@@ -37,9 +37,9 @@ class Visualizer(object):
         """ vis image in visdom
         """
         if env is None:
-            env = self.env 
+            env = self.env
         if self.id is not None:
-            name = "[%s]"%self.id + name
+            name = f"[{self.id}]" + name
         #win = self.cur_win.get(name, None)
         default_opts = { 'title': name }
         if opts is not None:
@@ -50,13 +50,14 @@ class Visualizer(object):
         #    self.cur_win[name] = self.vis.image( img=img, opts=default_opts, env=env )
     
     def vis_table(self, name, tbl, opts=None):
-        #win = self.cur_win.get(name, None)
-
-        tbl_str = "<table width=\"100%\"> "
-        tbl_str+="<tr> \
+        tbl_str = (
+            "<table width=\"100%\"> "
+            + "<tr> \
                  <th>Term</th> \
                  <th>Value</th> \
                  </tr>"
+        )
+
         for k, v in tbl.items():
             tbl_str+=  "<tr> \
                        <td>%s</td> \
