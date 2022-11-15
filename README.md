@@ -2,7 +2,7 @@
 
 Pretrained DeepLabv3, DeepLabv3+ for Pascal VOC & Cityscapes.
 
-## Quick Start 
+## Quick Start
 
 ### 1. Available Architectures
 Specify the model architecture with '--model ARCH_NAME' and set the output stride using '--output_stride OUTPUT_STRIDE'.
@@ -37,7 +37,7 @@ colorized_preds = Image.fromarray(colorized_preds[0]) # to PIL Image
 
 **Note**: All pre-trained models in this repo were trained without atrous separable convolution.
 
-Atrous Separable Convolution is supported in this repo. We provide a simple tool ``network.convert_to_separable_conv`` to convert ``nn.Conv2d`` to ``AtrousSeparableConvolution``. **Please run main.py with '--separable_conv' if it is required**. See 'main.py' and 'network/_deeplab.py' for more details. 
+Atrous Separable Convolution is supported in this repo. We provide a simple tool ``network.convert_to_separable_conv`` to convert ``nn.Conv2d`` to ``AtrousSeparableConvolution``. **Please run main.py with '--separable_conv' if it is required**. See 'main.py' and 'network/_deeplab.py' for more details.
 
 ### 5. Prediction
 Single image:
@@ -58,10 +58,10 @@ Please refer to [this commit (Xception)](https://github.com/VainF/DeepLabV3Plus-
 
 ### 1. Performance on Pascal VOC2012 Aug (21 classes, 513 x 513)
 
-Training: 513x513 random crop  
+Training: 513x513 random crop
 validation: 513x513 center crop
 
-|  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Dropbox  | Tencent Weiyun  | 
+|  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Dropbox  | Tencent Weiyun  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: | :----:   |
 | DeepLabV3-MobileNet       | 16      |  6.0G      |   16/16  |  0.701     |    [Download](https://www.dropbox.com/s/uhksxwfcim3nkpo/best_deeplabv3_mobilenet_voc_os16.pth?dl=0)       | [Download](https://share.weiyun.com/A4ubD1DD) |
 | DeepLabV3-ResNet50         | 16      |  51.4G     |  16/16   |  0.769     |    [Download](https://www.dropbox.com/s/3eag5ojccwiexkq/best_deeplabv3_resnet50_voc_os16.pth?dl=0) | [Download](https://share.weiyun.com/33eLjnVL) |
@@ -73,12 +73,12 @@ validation: 513x513 center crop
 
 ### 2. Performance on Cityscapes (19 classes, 1024 x 2048)
 
-Training: 768x768 random crop  
+Training: 768x768 random crop
 validation: 1024x2048
 
 |  Model          | Batch Size  | FLOPs  | train/val OS   |  mIoU        | Dropbox  |  Tencent Weiyun  |
 | :--------        | :-------------: | :----:   | :-----------: | :--------: | :--------: |  :----:   |
-| DeepLabV3Plus-MobileNet   | 16      |  135G      |  16/16   |  0.721  |    [Download](https://www.dropbox.com/s/753ojyvsh3vdjol/best_deeplabv3plus_mobilenet_cityscapes_os16.pth?dl=0) | [Download](https://share.weiyun.com/aSKjdpbL) 
+| DeepLabV3Plus-MobileNet   | 16      |  135G      |  16/16   |  0.721  |    [Download](https://www.dropbox.com/s/753ojyvsh3vdjol/best_deeplabv3plus_mobilenet_cityscapes_os16.pth?dl=0) | [Download](https://share.weiyun.com/aSKjdpbL)
 | DeepLabV3Plus-ResNet101   | 16      |  N/A      |  16/16   |  0.762  |    [Download](https://drive.google.com/file/d/1t7TC8mxQaFECt4jutdq_NMnWxdm6B-Nb/view?usp=sharing) | N/A |
 
 
@@ -139,8 +139,8 @@ You can run train.py with "--download" option to download and extract pascal voc
 ```
 /datasets
     /data
-        /VOCdevkit 
-            /VOC2012 
+        /VOCdevkit
+            /VOC2012
                 /SegmentationClass
                 /JPEGImages
                 ...
@@ -162,7 +162,7 @@ Extract trainaug labels (SegmentationClassAug) to the VOC2012 directory.
 ```
 /datasets
     /data
-        /VOCdevkit  
+        /VOCdevkit
             /VOC2012
                 /SegmentationClass
                 /SegmentationClassAug  # <= the trainaug labels
@@ -177,7 +177,7 @@ Extract trainaug labels (SegmentationClassAug) to the VOC2012 directory.
 
 #### 3.1 Visualize training (Optional)
 
-Start visdom sever for visualization. Please remove '--enable_vis' if visualization is not needed. 
+Start visdom sever for visualization. Please remove '--enable_vis' if visualization is not needed.
 
 ```bash
 # Run visdom server on port 28333
@@ -225,7 +225,7 @@ python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --g
 ### 2. Train your model on Cityscapes
 
 ```bash
-python main.py --model deeplabv3plus_mobilenet --dataset cityscapes --enable_vis --vis_port 28333 --gpu_id 0  --lr 0.1  --crop_size 768 --batch_size 16 --output_stride 16 --data_root ./datasets/data/cityscapes 
+python main.py --model deeplabv3plus_mobilenet --dataset cityscapes --enable_vis --vis_port 28333 --gpu_id 0  --lr 0.1  --crop_size 768 --batch_size 16 --output_stride 16 --data_root ./datasets/data/cityscapes
 ```
 
 ## Reference

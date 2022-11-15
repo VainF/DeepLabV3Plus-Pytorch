@@ -2,7 +2,7 @@ import collections
 import torchvision
 import torch
 import torchvision.transforms.functional as F
-import random 
+import random
 import numbers
 import numpy as np
 from PIL import Image
@@ -32,8 +32,7 @@ class ExtRandomHorizontalFlip(object):
         return img, lbl
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
-
+        return self.__class__.__name__ + "(p={})".format(self.p)
 
 
 class ExtCompose(object):
@@ -56,11 +55,11 @@ class ExtCompose(object):
         return img, lbl
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+        format_string = self.__class__.__name__ + "("
         for t in self.transforms:
-            format_string += '\n'
-            format_string += '    {0}'.format(t)
-        format_string += '\n)'
+            format_string += "\n"
+            format_string += "    {0}".format(t)
+        format_string += "\n)"
         return format_string
 
 
@@ -88,7 +87,7 @@ class ExtCenterCrop(object):
         return F.center_crop(img, self.size), F.center_crop(lbl, self.size)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0})'.format(self.size)
+        return self.__class__.__name__ + "(size={0})".format(self.size)
 
 
 class ExtRandomScale(object):
@@ -107,12 +106,17 @@ class ExtRandomScale(object):
         """
         assert img.size == lbl.size
         scale = random.uniform(self.scale_range[0], self.scale_range[1])
-        target_size = ( int(img.size[1]*scale), int(img.size[0]*scale) )
-        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, Image.NEAREST)
+        target_size = (int(img.size[1] * scale), int(img.size[0] * scale))
+        return F.resize(img, target_size, self.interpolation), F.resize(
+            lbl, target_size, Image.NEAREST
+        )
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
-        return self.__class__.__name__ + '(size={0}, interpolation={1})'.format(self.size, interpolate_str)
+        return self.__class__.__name__ + "(size={0}, interpolation={1})".format(
+            self.size, interpolate_str
+        )
+
 
 class ExtScale(object):
     """Resize the input PIL Image to the given scale.
@@ -136,12 +140,19 @@ class ExtScale(object):
             PIL Image: Rescaled label.
         """
         assert img.size == lbl.size
-        target_size = ( int(img.size[1]*self.scale), int(img.size[0]*self.scale) ) # (H, W)
-        return F.resize(img, target_size, self.interpolation), F.resize(lbl, target_size, Image.NEAREST)
+        target_size = (
+            int(img.size[1] * self.scale),
+            int(img.size[0] * self.scale),
+        )  # (H, W)
+        return F.resize(img, target_size, self.interpolation), F.resize(
+            lbl, target_size, Image.NEAREST
+        )
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
-        return self.__class__.__name__ + '(size={0}, interpolation={1})'.format(self.size, interpolate_str)
+        return self.__class__.__name__ + "(size={0}, interpolation={1})".format(
+            self.size, interpolate_str
+        )
 
 
 class ExtRandomRotation(object):
@@ -198,16 +209,19 @@ class ExtRandomRotation(object):
 
         angle = self.get_params(self.degrees)
 
-        return F.rotate(img, angle, self.resample, self.expand, self.center), F.rotate(lbl, angle, self.resample, self.expand, self.center)
+        return F.rotate(img, angle, self.resample, self.expand, self.center), F.rotate(
+            lbl, angle, self.resample, self.expand, self.center
+        )
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '(degrees={0}'.format(self.degrees)
-        format_string += ', resample={0}'.format(self.resample)
-        format_string += ', expand={0}'.format(self.expand)
+        format_string = self.__class__.__name__ + "(degrees={0}".format(self.degrees)
+        format_string += ", resample={0}".format(self.resample)
+        format_string += ", expand={0}".format(self.expand)
         if self.center is not None:
-            format_string += ', center={0}'.format(self.center)
-        format_string += ')'
+            format_string += ", center={0}".format(self.center)
+        format_string += ")"
         return format_string
+
 
 class ExtRandomHorizontalFlip(object):
     """Horizontally flip the given PIL Image randomly with a given probability.
@@ -230,7 +244,7 @@ class ExtRandomHorizontalFlip(object):
         return img, lbl
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + "(p={})".format(self.p)
 
 
 class ExtRandomVerticalFlip(object):
@@ -256,44 +270,53 @@ class ExtRandomVerticalFlip(object):
         return img, lbl
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + "(p={})".format(self.p)
+
 
 class ExtPad(object):
     def __init__(self, diviser=32):
         self.diviser = diviser
-    
+
     def __call__(self, img, lbl):
         h, w = img.size
-        ph = (h//32+1)*32 - h if h%32!=0 else 0
-        pw = (w//32+1)*32 - w if w%32!=0 else 0
-        im = F.pad(img, ( pw//2, pw-pw//2, ph//2, ph-ph//2) )
-        lbl = F.pad(lbl, ( pw//2, pw-pw//2, ph//2, ph-ph//2))
+        ph = (h // 32 + 1) * 32 - h if h % 32 != 0 else 0
+        pw = (w // 32 + 1) * 32 - w if w % 32 != 0 else 0
+        im = F.pad(img, (pw // 2, pw - pw // 2, ph // 2, ph - ph // 2))
+        lbl = F.pad(lbl, (pw // 2, pw - pw // 2, ph // 2, ph - ph // 2))
         return im, lbl
+
 
 class ExtToTensor(object):
     """Convert a ``PIL Image`` or ``numpy.ndarray`` to tensor.
     Converts a PIL Image or numpy.ndarray (H x W x C) in the range
     [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
     """
-    def __init__(self, normalize=True, target_type='uint8'):
+
+    def __init__(self, normalize=True, target_type="uint8"):
         self.normalize = normalize
         self.target_type = target_type
+
     def __call__(self, pic, lbl):
         """
         Note that labels will not be normalized to [0, 1].
         Args:
             pic (PIL Image or numpy.ndarray): Image to be converted to tensor.
-            lbl (PIL Image or numpy.ndarray): Label to be converted to tensor. 
+            lbl (PIL Image or numpy.ndarray): Label to be converted to tensor.
         Returns:
             Tensor: Converted image and label
         """
         if self.normalize:
-            return F.to_tensor(pic), torch.from_numpy( np.array( lbl, dtype=self.target_type) )
+            return F.to_tensor(pic), torch.from_numpy(
+                np.array(lbl, dtype=self.target_type)
+            )
         else:
-            return torch.from_numpy( np.array( pic, dtype=np.float32).transpose(2, 0, 1) ), torch.from_numpy( np.array( lbl, dtype=self.target_type) )
+            return torch.from_numpy(
+                np.array(pic, dtype=np.float32).transpose(2, 0, 1)
+            ), torch.from_numpy(np.array(lbl, dtype=self.target_type))
 
     def __repr__(self):
-        return self.__class__.__name__ + '()'
+        return self.__class__.__name__ + "()"
+
 
 class ExtNormalize(object):
     """Normalize a tensor image with mean and standard deviation.
@@ -321,7 +344,9 @@ class ExtNormalize(object):
         return F.normalize(tensor, self.mean, self.std), lbl
 
     def __repr__(self):
-        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+        return self.__class__.__name__ + "(mean={0}, std={1})".format(
+            self.mean, self.std
+        )
 
 
 class ExtRandomCrop(object):
@@ -373,7 +398,9 @@ class ExtRandomCrop(object):
             PIL Image: Cropped image.
             PIL Image: Cropped label.
         """
-        assert img.size == lbl.size, 'size of img and lbl should be the same. %s, %s'%(img.size, lbl.size)
+        assert (
+            img.size == lbl.size
+        ), "size of img and lbl should be the same. %s, %s" % (img.size, lbl.size)
         if self.padding > 0:
             img = F.pad(img, self.padding)
             lbl = F.pad(lbl, self.padding)
@@ -393,7 +420,9 @@ class ExtRandomCrop(object):
         return F.crop(img, i, j, h, w), F.crop(lbl, i, j, h, w)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0}, padding={1})'.format(self.size, self.padding)
+        return self.__class__.__name__ + "(size={0}, padding={1})".format(
+            self.size, self.padding
+        )
 
 
 class ExtResize(object):
@@ -409,7 +438,9 @@ class ExtResize(object):
     """
 
     def __init__(self, size, interpolation=Image.BILINEAR):
-        assert isinstance(size, int) or (isinstance(size, collections.Iterable) and len(size) == 2)
+        assert isinstance(size, int) or (
+            isinstance(size, collections.Iterable) and len(size) == 2
+        )
         self.size = size
         self.interpolation = interpolation
 
@@ -420,12 +451,17 @@ class ExtResize(object):
         Returns:
             PIL Image: Rescaled image.
         """
-        return F.resize(img, self.size, self.interpolation), F.resize(lbl, self.size, Image.NEAREST)
+        return F.resize(img, self.size, self.interpolation), F.resize(
+            lbl, self.size, Image.NEAREST
+        )
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
-        return self.__class__.__name__ + '(size={0}, interpolation={1})'.format(self.size, interpolate_str) 
-    
+        return self.__class__.__name__ + "(size={0}, interpolation={1})".format(
+            self.size, interpolate_str
+        )
+
+
 class ExtColorJitter(object):
     """Randomly change the brightness, contrast and saturation of an image.
     Args:
@@ -442,17 +478,23 @@ class ExtColorJitter(object):
             hue_factor is chosen uniformly from [-hue, hue] or the given [min, max].
             Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
     """
-    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
-        self.brightness = self._check_input(brightness, 'brightness')
-        self.contrast = self._check_input(contrast, 'contrast')
-        self.saturation = self._check_input(saturation, 'saturation')
-        self.hue = self._check_input(hue, 'hue', center=0, bound=(-0.5, 0.5),
-                                     clip_first_on_zero=False)
 
-    def _check_input(self, value, name, center=1, bound=(0, float('inf')), clip_first_on_zero=True):
+    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
+        self.brightness = self._check_input(brightness, "brightness")
+        self.contrast = self._check_input(contrast, "contrast")
+        self.saturation = self._check_input(saturation, "saturation")
+        self.hue = self._check_input(
+            hue, "hue", center=0, bound=(-0.5, 0.5), clip_first_on_zero=False
+        )
+
+    def _check_input(
+        self, value, name, center=1, bound=(0, float("inf")), clip_first_on_zero=True
+    ):
         if isinstance(value, numbers.Number):
             if value < 0:
-                raise ValueError("If {} is a single number, it must be non negative.".format(name))
+                raise ValueError(
+                    "If {} is a single number, it must be non negative.".format(name)
+                )
             value = [center - value, center + value]
             if clip_first_on_zero:
                 value[0] = max(value[0], 0)
@@ -460,7 +502,11 @@ class ExtColorJitter(object):
             if not bound[0] <= value[0] <= value[1] <= bound[1]:
                 raise ValueError("{} values should be between {}".format(name, bound))
         else:
-            raise TypeError("{} should be a single number or a list/tuple with lenght 2.".format(name))
+            raise TypeError(
+                "{} should be a single number or a list/tuple with lenght 2.".format(
+                    name
+                )
+            )
 
         # if value is 0 or (1., 1.) for brightness/contrast/saturation
         # or (0., 0.) for hue, do nothing
@@ -480,15 +526,21 @@ class ExtColorJitter(object):
 
         if brightness is not None:
             brightness_factor = random.uniform(brightness[0], brightness[1])
-            transforms.append(Lambda(lambda img: F.adjust_brightness(img, brightness_factor)))
+            transforms.append(
+                Lambda(lambda img: F.adjust_brightness(img, brightness_factor))
+            )
 
         if contrast is not None:
             contrast_factor = random.uniform(contrast[0], contrast[1])
-            transforms.append(Lambda(lambda img: F.adjust_contrast(img, contrast_factor)))
+            transforms.append(
+                Lambda(lambda img: F.adjust_contrast(img, contrast_factor))
+            )
 
         if saturation is not None:
             saturation_factor = random.uniform(saturation[0], saturation[1])
-            transforms.append(Lambda(lambda img: F.adjust_saturation(img, saturation_factor)))
+            transforms.append(
+                Lambda(lambda img: F.adjust_saturation(img, saturation_factor))
+            )
 
         if hue is not None:
             hue_factor = random.uniform(hue[0], hue[1])
@@ -506,17 +558,19 @@ class ExtColorJitter(object):
         Returns:
             PIL Image: Color jittered image.
         """
-        transform = self.get_params(self.brightness, self.contrast,
-                                    self.saturation, self.hue)
+        transform = self.get_params(
+            self.brightness, self.contrast, self.saturation, self.hue
+        )
         return transform(img), lbl
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
-        format_string += 'brightness={0}'.format(self.brightness)
-        format_string += ', contrast={0}'.format(self.contrast)
-        format_string += ', saturation={0}'.format(self.saturation)
-        format_string += ', hue={0})'.format(self.hue)
+        format_string = self.__class__.__name__ + "("
+        format_string += "brightness={0}".format(self.brightness)
+        format_string += ", contrast={0}".format(self.contrast)
+        format_string += ", saturation={0}".format(self.saturation)
+        format_string += ", hue={0})".format(self.hue)
         return format_string
+
 
 class Lambda(object):
     """Apply a user-defined lambda as a transform.
@@ -532,7 +586,7 @@ class Lambda(object):
         return self.lambd(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '()'
+        return self.__class__.__name__ + "()"
 
 
 class Compose(object):
@@ -555,9 +609,9 @@ class Compose(object):
         return img
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+        format_string = self.__class__.__name__ + "("
         for t in self.transforms:
-            format_string += '\n'
-            format_string += '    {0}'.format(t)
-        format_string += '\n)'
+            format_string += "\n"
+            format_string += "    {0}".format(t)
+        format_string += "\n)"
         return format_string
