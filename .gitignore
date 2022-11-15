@@ -1,6 +1,6 @@
 __pycache__
 VOCdevkit
-checkpoints
+checkpoints*
 .vscode
 *.pyc
 .idea/
@@ -14,3 +14,8 @@ ignore_masks
 mask_gt
 predictions
 exps
+configs
+*_predictions
+experiments*
+*.png
+*.onnx
